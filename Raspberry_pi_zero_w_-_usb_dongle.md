@@ -2,11 +2,28 @@
 
 ## Table of Contents <!-- omit in toc -->
 
-- [Before you begin](#before-you-begin)
-- [Downloading OS](#downloading/installing-os)
-- [Manual Setup](#manual_setup)
-- [Headless Setup](#headless-setup)
-- [Connecting to the Raspberry](#connect-using-ssh)
+- [**Before you begin**](#before-you-begin)
+  - [**Minimum Requirements**](#minimum-requirements)
+- [**Downloading/Installing the OS**](#downloadinginstalling-the-os)
+- [**Manual Setup**](#manual-setup)
+  - [**Navigate Raspberry OS**](#navigate-raspberry-os)
+    - [**Wifi** {#manual-wifi}](#wifi-manual-wifi)
+    - [**Change password** {#manual-pass-change}](#change-password-manual-pass-change)
+    - [**Enable SSH** {#manual-ssh}](#enable-ssh-manual-ssh)
+- [**Headless Setup**](#headless-setup)
+  - [**Wifi** {#headless-wifi}](#wifi-headless-wifi)
+  - [**Enable SSH** {#headless_ssh}](#enable-ssh-headless_ssh)
+  - [**Change password** {#headless_pass_change}](#change-password-headless_pass_change)
+- [**Change File Contents** {#file-change}](#change-file-contents-file-change)
+- [**Connect using SSH**](#connect-using-ssh)
+  - [**Linux and MacOS**](#linux-and-macos)
+  - [**Windows**](#windows)
+  - [**Android & iOS**](#android--ios)
+- [**Finished**](#finished)
+- [**Additional**](#additional)
+  - [**Creating a new user**](#creating-a-new-user)
+    - [**User Groups**](#user-groups)
+  - [**Changing the hostname**](#changing-the-hostname)
 
 ## **Before you begin**
 
@@ -59,7 +76,7 @@ You need to do 3 things in this menu: connect to wifi, change default password a
 
 To connect your Raspberry Pi to the wifi, press `enter` to go into the System Options menu. Then select `Wireless LAN`, and select your timezone from the list. You can press the first letter of your timezone (e.g. L to go to the L section), to skip to that section. Then enter the SSID (the wifi name), and passkey for the wifi.
 
-If you'd like to check whether the connection was successful, press `Alt+F2` to view the command line again. Login, same as before, and type `ip a`. If you have connections shown, it should have worked. Then, press `Alt+F1` to go back to the config menu.
+If you'd like to check whether the connection was successful, press `ALT+F2` to view the command line again. Login, same as before, and type `ip a`. If you have connections shown, it should have worked. Then, press `ALT+F1` to go back to the config menu.
 
 #### **Change password** {#manual-pass-change}
 
@@ -153,3 +170,42 @@ After completing these steps you will have the Raspberry Pi prompt open to work 
 If you want to [shutdown](https://www.tecmint.com/shutdown-poweroff-halt-and-reboot-commands-in-linux/) the Raspberry Pi you can use `sudo poweroff`.
 
 For more information on the Raspberry Pi, and how you can use it, you can use the [official documentation](https://www.raspberrypi.org/documentation/)
+
+## **Additional**
+
+### **Creating a new user**
+
+[Making a new user](https://www.raspberrypi.org/documentation/linux/usage/users.md) on a Raspberry Pi is the same process as it would be on Linux.
+
+Creating new users will be done with the `sudo adduser USER` command, where you replace `USER` with a username of your choice. The `sudo` is required because this is a `root` command (like `raspi-config` previously). After entering the command, you will be prompted for a password. You can leave this blank by just pressing enter if you do not want a password for this user. This will make a normal user without elevated privileges.
+
+If you need to change the password of a user, there is the `passwd` command. After using this, the user will be prompted to enter a new password and confirm it. Alternatively you can run `passwd` from an elevated user to change the password of other users (e.g. `sudo passwd bob` will change the password for user `bob`).
+
+#### **User Groups**
+
+If a user needs to have elevated privileges, you need to add it to the `sudo` group. Appending users to a group can be done with `sudo adduser USER GROUP` where you replace `GROUP` with the group name, which in this case would be `sudo` (e.g. `sudo adduser bob sudo`).
+
+You can also adjust an existing user's groups with the [`usermod`](https://linuxize.com/post/usermod-command-in-linux/) command. Because this is a `root` command, you need to execute it from a user with elevated privileges. To add an existing user to a group, or multiple groups, the syntax will be `sudo usermod -a -G GROUPS USER`.
+
+- `-a` is to append a user to the supplemented groups without removing it from other groups.
+- `-G` is for a list of supplemented groups. **Note:** `-G` needs to be capital G because `-g` is a different parameter, and it needs to be a comma separated list without spaces in between (e.g. `group1,group2,group3`). You can view more information about `usermod` and its parameters by typing `usermod --help` in the command line.
+
+An example command will look like `sudo usermod -a -G sudo,builder bob`.
+
+
+### **Changing the hostname**
+
+Changing the hostname of the Raspberry Pi can be done in two ways.
+
+**Note:** When changing the hostname only use letters a to z, digits 0 to 9 and the hyphen character. It may not begin or end with a hyphen, nor contain any other character than previously described.
+
+The first is using the terminal to change the necessary file directly. To open the file, use `sudo nano /etc/hostname`.
+
+- `nano` is a Linux command-line text editor.
+- `/etc/` is a folder which contains all of your system configuration files. `etc` stands for et cetera, it is used for a collection of files that do not fit in other folders.
+- `hostname` is the file we want to edit. It only contains one line, the name you want to edit.
+
+Because `/etc/` contains configuration files you need to be careful with changing contents, and thus `sudo` is needed to confirm write privileges.
+When you have opened the file, you should see raspberrypi. Changing this will change the hostname of the device _after reboot_. To save the changes use `CTRL-o` and press enter. To exit nano use `CTRL-x` and to see extra information/help use `CTRL-g`.
+
+The second is using `sudo raspi-config`. In the menu, navigate to `System Options` and then `Hostname`, where - after a description of what _not_ to do - you can change and save the new hostname.
