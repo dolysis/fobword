@@ -7,4 +7,3 @@ pub mod temp_filer;
 pub mod app;
 pub mod yaml_config;
 pub mod db;
-pub mod command;

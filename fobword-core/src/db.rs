@@ -1,29 +1,26 @@
-use std::path::Path;
-
 use rusqlite::{params, Connection, Result};
-use super::command::Command;
 /// Helper struct that holds the database connection and common operations
 #[derive(Debug)]
 pub struct Db
 {
-    conn: Connection
+    // Connection to the database
+    conn: Connection,
 }
 
 impl Db
 {
     /// Create a new database connection from the path
-    pub fn new(path: &Path) -> Result<Db>
+    pub fn new(path: &str) -> Db
     {
-        let conn = Connection::open(path)?;
+        let conn = Connection::open(path).expect("Failed to open DB connection: ");
 
         conn.execute(
             "CREATE TABLE IF NOT EXISTS macros (
                     name TEXT NOT NULL PRIMARY KEY,
                     password TEXT NOT NULL)", 
-            []
-                )?;
+            []).expect("Couldn't make the necessary table");
         
-        Ok(Db { conn })
+        Db { conn }
     }
 
     /// Insert a macro into the database with the given name and password
@@ -53,16 +50,15 @@ impl Db
     }
 
     /// Load all macros from the database
-    pub fn load_macros(&self) -> Result<Vec<Command>>
+    pub fn load_macros(&self) -> Result<Vec<String>>
     {
-        let mut stmt = self.conn.prepare("SELECT name, password FROM macros")?;
+        let mut stmt = self.conn.prepare("SELECT name FROM macros")?;
         let mut rows = stmt.query([])?;
         let mut commands = Vec::new();
         while let Some(row) = rows.next()?
         {
             let name: String = row.get(0)?;
-            let password: String = row.get(1)?;
-            commands.push( Command { name, password});
+            commands.push(name);
         }
         Ok(commands)
     }
