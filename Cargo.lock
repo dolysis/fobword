@@ -23,7 +23,6 @@ name = "dys-template"
 version = "0.1.0"
 dependencies = [
  "fobword-core",
- "rusqlite",
 ]
 
 [[package]]
@@ -41,6 +40,9 @@ checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
 [[package]]
 name = "fobword-core"
 version = "0.1.0"
+dependencies = [
+ "rusqlite",
+]
 
 [[package]]
 name = "hashbrown"

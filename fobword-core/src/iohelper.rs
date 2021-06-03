@@ -50,10 +50,8 @@ impl IOhelper
     /// Write a single buffer to the file, flushing it to ensure the data will be pushed to the file
     pub fn write_to_file(&mut self, buffer: &[u8]) -> std::io::Result<()>
     {
-        //self.writer.write(buffer)?;
-        //self.writer.flush()?;
-        println!("{:?}", buffer);
-        Ok(())
+        self.writer.write(buffer)?;
+        self.writer.flush()
     }
 
     /// Write multiple buffers to the file, flushing between every buffer, as to simulate a single HID report

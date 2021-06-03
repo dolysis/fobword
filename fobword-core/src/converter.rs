@@ -1,4 +1,3 @@
-
 #![allow(dead_code)]
 
 use std::collections::{HashMap, VecDeque};
@@ -24,6 +23,8 @@ impl Converter
         // hashmap to static array?
 
         //Hashmap keeps it on the heap(?) Since its static should probably be on the stack
+
+        // Change the look up table fill, to a function, add qwerty, d
         let mut map = std::collections::HashMap::new();
         map.insert(Keypress::Character('a'), (Modifier::None, 0x04u8));
         map.insert(Keypress::Character('b'), (Modifier::None, 0x05u8));
@@ -255,7 +256,7 @@ impl Converter
     /// let result = converter.report_code_to_character((Modifier::None, 0xFF));
     /// assert_eq!(result, None);
     /// ```
-    pub fn report_code_to_character(&self, report_code: (Modifier, u8)) -> Keypress
+    pub fn report_code_to_keypress(&self, report_code: (Modifier, u8)) -> Keypress
     {
         match self.map.iter().find_map(|(key, val)| 
             if val.0 == report_code.0 && val.1 == report_code.1
@@ -287,11 +288,10 @@ impl Converter
     pub fn report_to_keypress(&self, queue: &mut VecDeque<Keypress>, report: &[u8], old_report: &[u8])
     {
         let control_code = Modifier::from(report[0]);
-        let mut result = String::new();
         let s = &old_report[2..];
         for i in report.iter().skip(2).filter(|x| x != &&0 && !s.contains(x))
         {
-            queue.push_back(Keypress::None);
+            queue.push_back(self.report_code_to_keypress((control_code, *i)))
         }
     }
     

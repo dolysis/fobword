@@ -1,3 +1,4 @@
+
 use super::converter::{Converter, Keypress};
 use super::yaml_config::Config;
 use super::iohelper::IOhelper;
@@ -9,6 +10,7 @@ pub struct App
 {
     iohelper: IOhelper,
     macro_key: Vec<u8>,
+    converter: Converter,
 }
 
 impl App
@@ -16,14 +18,13 @@ impl App
     pub fn new(config: Config) -> std::io::Result<App>
     {
         let reader: Box<dyn BufRead> = Box::new(BufReader::new(OpenOptions::new().read(true).open(config.reader_loc)?));
-        let writer: Box<dyn Write> = Box::new(std::io::stdout());
+        let writer: Box<dyn Write> = Box::new(OpenOptions::new().write(true).open(config.writer_loc)?);
         let iohelper = IOhelper::new(reader, writer);
-        Ok(App { iohelper , macro_key: config.macro_key})
+        Ok(App { iohelper , macro_key: config.macro_key, converter: Converter::new()})
     }
 
     pub fn main_loop(&mut self) -> std::io::Result<()>
     {
-        let converter = Converter::new();
         // Load the combo you want to use
         let mut buffer = vec![0u8; 8];
         loop
@@ -48,29 +49,7 @@ impl App
             }
             else
             {
-                let mut command = String::new();
-                let mut queue = VecDeque::new();
-
-                loop
-                {
-                    // If the there is nothing left in the queue and we haven't left the loop we wait for the next keypress
-                    match queue.pop_front()
-                    {
-                        Some(v) => match v
-                        {
-                            Keypress::Character(c) => command.push(c),
-                            Keypress::Enter => println!("{}", command),
-                            Keypress::Macro => break,
-                            Keypress::None => continue,
-                        },
-                        None => 
-                        {                            
-                            let old_buffer = buffer.clone();
-                            self.iohelper.read_next_character(&mut buffer)?;
-                            converter.report_to_keypress(&mut queue, &buffer, &old_buffer);
-                        }
-                    }
-                }
+                let command = self.read_line(&mut buffer)?;
 
                 println!("{:?}", command);
                 match command.as_ref()
@@ -79,19 +58,40 @@ impl App
                     "delete" | "remove" => println!("delete"),
                     "update" => println!("update"),
                     "exit" | "exterminate" => break,
+                    "harry" => {self.iohelper.write_buffers_to_file(self.converter.string_to_report_buffers("potter").unwrap())?; ()},
                     _ => println!("use the macro"),
                 };
             }
         }
         Ok(())
     }
+
+    fn read_line(&mut self, buffer: &mut Vec<u8>) -> Result<String, std::io::Error> 
+    {
+        let mut result_string = String::new();
+        let mut character_queue = VecDeque::new();
+        self.converter.report_to_keypress(&mut character_queue, &buffer, &vec![0u8;8]);
+        'read_character_loop: loop
+        {
+            match character_queue.pop_front()
+            {
+                //If character queue has some key
+                Some(key) => match key
+                {
+                    Keypress::Character(character) => result_string.push(character),
+                    Keypress::Enter => break 'read_character_loop,
+                    Keypress::Macro => break 'read_character_loop,
+                    Keypress::None => continue,
+                },
+                // If there is no key in the queue, read new input and append to the queue
+                None => 
+                {                            
+                    let old_buffer = buffer.clone();
+                    self.iohelper.reader.read_exact(buffer)?;
+                    self.converter.report_to_keypress(&mut character_queue, &buffer, &old_buffer);
+                }
+            }
+        }
+        Ok(result_string)
+    }
 }
-
-// read_word() -> String?
-
-// Report can contain up to 6 characters
-// queue? 
-// Queue<Enum>>
-// Enum -> Char, control, none
-// while Enum::Control(buffer) != queue.pop()?
-// 
