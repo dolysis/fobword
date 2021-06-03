@@ -1,9 +1,11 @@
 
+use crate::db::Db;
+
 use super::converter::{Converter, Keypress};
 use super::yaml_config::Config;
 use super::iohelper::IOhelper;
 use std::collections::VecDeque;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Write, Result};
 use std::fs::OpenOptions;
 
 pub struct App
@@ -11,19 +13,21 @@ pub struct App
     iohelper: IOhelper,
     macro_key: Vec<u8>,
     converter: Converter,
+    database: Db,
 }
 
 impl App
 {
-    pub fn new(config: Config) -> std::io::Result<App>
+    pub fn new(config: Config) -> Result<App>
     {
         let reader: Box<dyn BufRead> = Box::new(BufReader::new(OpenOptions::new().read(true).open(config.reader_loc)?));
         let writer: Box<dyn Write> = Box::new(OpenOptions::new().write(true).open(config.writer_loc)?);
         let iohelper = IOhelper::new(reader, writer);
-        Ok(App { iohelper , macro_key: config.macro_key, converter: Converter::new()})
+        let database = Db::new("/home/pi/macro.db3");
+        Ok(App { iohelper , macro_key: config.macro_key, converter: Converter::new(), database})
     }
 
-    pub fn main_loop(&mut self) -> std::io::Result<()>
+    pub fn main_loop(&mut self) -> Result<()>
     {
         // Load the combo you want to use
         let mut buffer = vec![0u8; 8];
@@ -54,7 +58,7 @@ impl App
                 println!("{:?}", command);
                 match command.as_ref()
                 {
-                    "make" | "create" => println!("make"),
+                    "make" | "create" => self.make_new_macro()?,
                     "delete" | "remove" => println!("delete"),
                     "update" => println!("update"),
                     "exit" | "exterminate" => break,
@@ -66,7 +70,20 @@ impl App
         Ok(())
     }
 
-    fn read_line(&mut self, buffer: &mut Vec<u8>) -> Result<String, std::io::Error> 
+    fn make_new_macro(&mut self) -> Result<()>
+    {
+        let mut buffer = vec![0u8;8];
+        let new_command = self.read_line(&mut buffer)?;
+        let password = self.read_line(&mut buffer)?;
+        let commands = self.database.load_macros().unwrap();
+
+        
+
+        Ok(())
+    }
+
+
+    fn read_line(&mut self, buffer: &mut Vec<u8>) -> Result<String> 
     {
         let mut result_string = String::new();
         let mut character_queue = VecDeque::new();
