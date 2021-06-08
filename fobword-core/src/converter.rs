@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::collections::{HashMap, VecDeque};
+use std::{collections::{HashMap, VecDeque}};
 
 
 /// The converter struct manages the conversion between a report code and the corrosponding ascii character or control key.
@@ -262,10 +262,10 @@ impl Converter
             if val.0 == report_code.0 && val.1 == report_code.1
             { 
                 Some(key) 
-            } 
-            else 
-            { 
-                None 
+            }
+            else
+            {
+                None
             })
         {
             Some(value) => value.clone(),

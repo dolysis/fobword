@@ -5,5 +5,5 @@ pub mod converter;
 pub mod iohelper;
 pub mod temp_filer;
 pub mod app;
-pub mod yaml_config;
+pub mod config;
 pub mod db;

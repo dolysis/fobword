@@ -2,7 +2,7 @@
 use crate::db::Db;
 
 use super::converter::{Converter, Keypress};
-use super::yaml_config::Config;
+use super::config::Config;
 use super::iohelper::IOhelper;
 use std::collections::VecDeque;
 use std::io::{BufRead, BufReader, Write, Result};
@@ -23,7 +23,7 @@ impl App
         let reader: Box<dyn BufRead> = Box::new(BufReader::new(OpenOptions::new().read(true).open(config.reader_loc)?));
         let writer: Box<dyn Write> = Box::new(OpenOptions::new().write(true).open(config.writer_loc)?);
         let iohelper = IOhelper::new(reader, writer);
-        let database = Db::new("/home/pi/macro.db3");
+        let database = Db::new("");
         Ok(App { iohelper , macro_key: config.macro_key, converter: Converter::new(), database})
     }
 
@@ -75,10 +75,15 @@ impl App
         let mut buffer = vec![0u8;8];
         let new_command = self.read_line(&mut buffer)?;
         let password = self.read_line(&mut buffer)?;
-        let commands = self.database.load_macros().unwrap();
+        //let commands = self.database.load_macros().unwrap();
 
-        
+        //if commands.contains(&new_command)
+       // {
+            // Do something to let people know this shit aint right
+        //    return Ok(())
+        //}
 
+        //self.database.insert_macro(&new_command, &password);
         Ok(())
     }
 
@@ -87,28 +92,24 @@ impl App
     {
         let mut result_string = String::new();
         let mut character_queue = VecDeque::new();
-        self.converter.report_to_keypress(&mut character_queue, &buffer, &vec![0u8;8]);
-        'read_character_loop: loop
+        let mut old_buffer = vec![0u8;8];
+        loop
         {
-            match character_queue.pop_front()
+            self.converter.report_to_keypress(&mut character_queue, &buffer, &old_buffer);
+
+            while let Some(key) = character_queue.pop_front()
             {
-                //If character queue has some key
-                Some(key) => match key
+                match key
                 {
                     Keypress::Character(character) => result_string.push(character),
-                    Keypress::Enter => break 'read_character_loop,
-                    Keypress::Macro => break 'read_character_loop,
+                    Keypress::Enter => return Ok(result_string),
+                    Keypress::Macro => return Ok(result_string),
                     Keypress::None => continue,
-                },
-                // If there is no key in the queue, read new input and append to the queue
-                None => 
-                {                            
-                    let old_buffer = buffer.clone();
-                    self.iohelper.reader.read_exact(buffer)?;
-                    self.converter.report_to_keypress(&mut character_queue, &buffer, &old_buffer);
                 }
             }
+
+            old_buffer = buffer.clone();
+            self.iohelper.reader.read_exact(buffer)?;
         }
-        Ok(result_string)
     }
 }

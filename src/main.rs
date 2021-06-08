@@ -1,5 +1,5 @@
 use fobword_core::app::App;
-use fobword_core::yaml_config::Config;
+use fobword_core::config::Config;
 
 fn main() -> std::io::Result<()>
 {
