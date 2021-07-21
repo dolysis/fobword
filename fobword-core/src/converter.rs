@@ -102,6 +102,8 @@ impl Converter
         map.insert(Keypress::Character('('), (Modifier::Shift, 0x26u8));
         map.insert(Keypress::Character(')'), (Modifier::Shift, 0x27u8));
 
+        map.insert(Keypress::Character(' '), (Modifier::None, 0x2bu8));
+        map.insert(Keypress::Character('\t'), (Modifier::None, 0x2cu8));
         map.insert(Keypress::Character('-'), (Modifier::None, 0x2du8));
         map.insert(Keypress::Character('_'), (Modifier::Shift, 0x2du8));
         map.insert(Keypress::Character('='), (Modifier::None, 0x2eu8));
@@ -125,7 +127,7 @@ impl Converter
         map.insert(Keypress::Character('/'), (Modifier::None, 0x38u8));
         map.insert(Keypress::Character('?'), (Modifier::Shift, 0x38u8));
 
-        map.insert(Keypress::Macro, (Modifier::Ctrl, 0x13u8));
+        map.insert(Keypress::Macro, (Modifier::Ctrl, 0x38u8));
         map.insert(Keypress::Enter, (Modifier::None, 0x28u8));
         Converter { map }
     }

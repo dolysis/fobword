@@ -2,6 +2,8 @@ use std::io::{BufRead, Write, BufReader};
 use std::fs::OpenOptions;
 use std::path::Path;
 
+use crate::converter::Converter;
+
 
 #[allow(missing_debug_implementations)]
 /// Struct that contains helper functions to simplify reading and writing HID reports
@@ -11,23 +13,30 @@ pub struct IOhelper
     pub reader: Box<dyn BufRead>,
     /// The writer to which HID reports will be written
     pub writer: Box<dyn Write>,
+    
+    pub buffer: [u8; 8],
+
+    pub converter: Converter,
 }
 
 impl IOhelper
 {
     /// Create a new helper from stuff
-    pub(crate) fn new(reader: Box<dyn BufRead>, writer: Box<dyn Write>) -> IOhelper
+    pub(crate) fn new(reader: Box<dyn BufRead>, writer: Box<dyn Write>, converter: Converter) -> IOhelper
     {
-        IOhelper { reader, writer}
+        let buffer = [0u8;8];
+        IOhelper { reader, writer, buffer, converter}
     }
     
     /// Create a new helper from with the location to read from, and to write buffers to.
-    pub fn from_paths(reader_loc: &Path, writer_loc: &Path) -> std::io::Result<IOhelper>
+    pub fn from_paths(reader_loc: &Path, writer_loc: &Path, converter: Converter) -> std::io::Result<IOhelper>
     {
         let reader: Box<dyn BufRead> = Box::new(BufReader::new(OpenOptions::new().read(true).open(reader_loc)?));
         let writer: Box<dyn Write> = Box::new(OpenOptions::new().write(true).open(writer_loc)?);
 
-        Ok(IOhelper { reader, writer})
+        let buffer = [0u8;8];
+
+        Ok(IOhelper { reader, writer, buffer, converter})
     }
 
     /// Read exact while waiting for a 'character' to be pressed
@@ -59,10 +68,9 @@ impl IOhelper
     {
         for i in buffers
         {
-            self.writer.write(&i)?;
-            self.writer.flush()?;
+            self.write_to_file(&i)?;
         }
         Ok(())
     }
-}
 
+}
