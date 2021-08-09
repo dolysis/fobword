@@ -13,7 +13,11 @@ fn main() -> Result<(), DataHandleError>
         Err(e) => {
             match e.kind()
             {
-                std::io::ErrorKind::NotFound => default_config(),
+                std::io::ErrorKind::NotFound => 
+                {
+                    OpenOptions::new().create(true).write(true).open("/home/pi/config.yaml")?;
+                    default_config()
+                },
                 _ => Err(DataHandleError::IOError(e)),
             }?
         }

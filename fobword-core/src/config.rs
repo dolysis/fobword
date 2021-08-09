@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use std::str;
-use serde::{Serialize, Deserialize};
-use serde::de::DeserializeOwned;
+use std::str::{self, Bytes};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{DeserializeOwned, Expected};
 use aes_gcm::{Aes256Gcm, Key, Nonce};
 use aes_gcm::aead::{Aead, NewAead, Payload};
 use argon2::password_hash::SaltString;
@@ -52,8 +52,22 @@ pub struct Data
     #[serde(skip, default = "default_lock")]
     is_locked: bool,
     salt: String,
+    #[serde(deserialize_with = "deserialize_str_to_vec", serialize_with = "serialize_vec_to_str")]
     key: Vec<u8>,
     pub data: HashMap<String, DataInformation>
+}
+
+fn deserialize_str_to_vec<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+where D: Deserializer<'de> {
+    let buf = String::deserialize(deserializer)?;
+    Ok(buf.as_bytes().to_owned())
+}
+
+fn serialize_vec_to_str<S>(key: &Vec<u8>, s: S) -> Result<S::Ok, S::Error>
+where S: Serializer,
+{
+    let str = str::from_utf8(key).map_err(|_| serde::ser::Error::custom("invalid utf8"))?;
+    s.serialize_str(&str)
 }
 
 fn default_lock() -> bool

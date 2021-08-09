@@ -165,7 +165,7 @@ impl Converter
         let mut chars = word.chars();
         if let Some(c) = chars.next()
         {   
-            if let Some((char_shift_code, char_code)) = self.character_to_report_code(c)
+            if let Some((char_shift_code, char_code)) = self.keypress_to_report_code(Keypress::Character(c))
             {
                 self.write_first_char_to_buffer(&mut index, &mut in_process_buffer, char_code, char_shift_code);
             }
@@ -177,7 +177,7 @@ impl Converter
         
         for i in chars
         {
-            if let Some((char_shift_code, char_code)) = self.character_to_report_code(i)
+            if let Some((char_shift_code, char_code)) = self.keypress_to_report_code(Keypress::Character(i))
             {
                 if in_process_buffer.contains(&char_code)
                 {
@@ -229,9 +229,13 @@ impl Converter
     /// let result = converter.character_to_report_code(&'æ');
     /// assert_eq!(result, None);
     /// ```
-    pub fn character_to_report_code(&self, character: char) -> Option<(Modifier, u8)>
+    pub fn keypress_to_report_code(&self, keypress: Keypress) -> Option<(Modifier, u8)>
     {
-        match self.map.get(&Keypress::Character(character))
+        if let Keypress::Control(val) = keypress
+        {
+            return Some(val)
+        }
+        match self.map.get(&keypress)
         {
             Some(value) => Some(value.clone()),
             None => None,
@@ -271,7 +275,7 @@ impl Converter
             })
         {
             Some(value) => value.clone(),
-            None => Keypress::None,
+            None => Keypress::Control(report_code),
         }
     }
 
@@ -311,15 +315,29 @@ impl Converter
         buffer[*index + 2] = char_code;
         *index += 1;
     }
+
+    fn add_type(&mut self, keypress: Keypress, tuple: (Modifier, u8))
+    {
+        self.map.insert(keypress, tuple);
+    }
+
+    pub fn add_macro(&mut self, report: &[u8])
+    {
+        let control_code = Modifier::from(report[0]);
+        let key = report[1];
+        self.add_type(Keypress::Macro, (control_code, key));
+    }
 }
 
-#[derive(Debug, PartialEq, Clone, Copy, Hash, Eq)]
+#[derive(Debug, PartialEq, Clone, Hash, Eq)]
 #[non_exhaustive]
 /// Enum to indicate what key has been pressed
 pub enum Keypress
 {
     /// The key can be translated to an ascii character
     Character(char),
+    //
+    Control((Modifier, u8)),
     /// The enter key
     Enter,
     /// The macro combination (ctrl, shift, P)
@@ -329,7 +347,7 @@ pub enum Keypress
 }
 
 /// Enum to hold all combinations of modifier keys that can be used in this crate
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Hash, Eq)]
 pub enum Modifier
 {
     /// No modifier key is pressed
