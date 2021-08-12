@@ -9,7 +9,12 @@ use argon2::{Argon2, PasswordHasher};
 use rand::Rng;
 use crate::error::DataHandleError;
 
-/// Struct to hold the configuration from yaml
+/// 
+///
+///
+///
+///
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config<T>
 {
