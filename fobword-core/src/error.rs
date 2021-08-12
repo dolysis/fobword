@@ -1,13 +1,27 @@
+/// Convience Error type to handle the different errors from exterior crates
 #[derive(Debug)]
 pub enum DataHandleError
 {
+    // https://doc.rust-lang.org/std/io/struct.Error.html
     IOError(std::io::Error),
+
+    // https://docs.rs/aes-gcm/0.9.3/aes_gcm/struct.Error.html
     AesError(aes_gcm::Error),
+
+    // https://docs.rs/argon2/0.2.2/argon2/enum.Error.html
     ArgonError(password_hash::Error),
+
+    // https://docs.rs/base64/0.13.0/base64/enum.DecodeError.html
     B64ParseError(base64::DecodeError),
+
+    // https://docs.serde.rs/serde_yaml/struct.Error.html
     YamlParseError(serde_yaml::Error),
+
+    // https://doc.rust-lang.org/std/string/struct.FromUtf8Error.html
+    FromUt8Error(std::string::FromUtf8Error),
+
+    // Error for when trying to access locked data that holds message for debug
     LockedData(String),
-    FromUt8Error(std::string::FromUtf8Error)
 }
 
 impl From<std::string::FromUtf8Error> for DataHandleError
