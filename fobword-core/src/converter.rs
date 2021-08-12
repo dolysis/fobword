@@ -1,9 +1,17 @@
-#![allow(dead_code)]
-
-use std::{collections::{HashMap, VecDeque}};
-
-
-/// The converter struct manages the conversion between a report code and the corrosponding ascii character or control key.
+use std::collections::HashMap;
+/// A struct that holds a map which can be used to convert between raw keyboard codes and Keypress enum variants.
+///
+/// # Example
+/// ```
+/// let converter = Converter::default();
+///
+/// let modifier_key = Modifier::None;
+/// let raw_key_code_a = 0x04u8;
+/// assert_eq!(Keypress::Character('a'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
+///
+/// let keypress = Keypress::Character('Z');
+/// assert_eq!((Modifier::Shift, 0x1du8), converter.convert_keypress(&keypress));
+/// ```
 #[derive(Debug)]
 pub struct Converter
 {
@@ -12,20 +20,34 @@ pub struct Converter
 
 impl Converter
 {
-    /// Create a new converter with populated look-up table, to translate between characters and
-    /// HID reports.
+
+    /// Constructs a new, empty Converter
+    ///
+    /// Using this without filling the map will return default values
+    ///
+    /// # Examples
+    /// ```
+    /// let mut converter = Converter::new();
+    /// ```
     pub fn new() -> Converter
     {
-        // save it as u16, with modifier upper byte keycode lowerbyte
+        let map = HashMap::new();
 
-        // If not in hashmap its not a character, Option<char> or enum type -char, -keycode, none?
+        Converter { map }
+    }
 
-        // hashmap to static array?
 
-        //Hashmap keeps it on the heap(?) Since its static should probably be on the stack
+    /// Constructs a Converter with  
+    /// default mapping for keyboard codes as per USB HID Usages and Descriptions document: https://usb.org/sites/default/files/hut1_22.pdf
+    ///
+    /// # Examples
+    /// ```
+    /// let mut converter = Converter::default();
+    /// ```
+    pub fn default() -> Converter
+    {
+        let mut map = HashMap::new();
 
-        // Change the look up table fill, to a function, add qwerty, d
-        let mut map = std::collections::HashMap::new();
         map.insert(Keypress::Character('a'), (Modifier::None, 0x04u8));
         map.insert(Keypress::Character('b'), (Modifier::None, 0x05u8));
         map.insert(Keypress::Character('c'), (Modifier::None, 0x06u8));
@@ -102,8 +124,8 @@ impl Converter
         map.insert(Keypress::Character('('), (Modifier::Shift, 0x26u8));
         map.insert(Keypress::Character(')'), (Modifier::Shift, 0x27u8));
 
-        map.insert(Keypress::Character(' '), (Modifier::None, 0x2bu8));
-        map.insert(Keypress::Character('\t'), (Modifier::None, 0x2cu8));
+        map.insert(Keypress::Character('\t'), (Modifier::None, 0x2bu8));
+        map.insert(Keypress::Character(' '), (Modifier::None, 0x2cu8));
         map.insert(Keypress::Character('-'), (Modifier::None, 0x2du8));
         map.insert(Keypress::Character('_'), (Modifier::Shift, 0x2du8));
         map.insert(Keypress::Character('='), (Modifier::None, 0x2eu8));
@@ -127,209 +149,124 @@ impl Converter
         map.insert(Keypress::Character('/'), (Modifier::None, 0x38u8));
         map.insert(Keypress::Character('?'), (Modifier::Shift, 0x38u8));
 
-        map.insert(Keypress::Macro, (Modifier::Ctrl, 0x38u8));
+        map.insert(Keypress::F(1), (Modifier::None, 0x3au8));
+        map.insert(Keypress::F(2), (Modifier::None, 0x3bu8));
+        map.insert(Keypress::F(3), (Modifier::None, 0x3cu8));
+        map.insert(Keypress::F(4), (Modifier::None, 0x3du8));
+        map.insert(Keypress::F(5), (Modifier::None, 0x3eu8));
+        map.insert(Keypress::F(6), (Modifier::None, 0x3fu8));
+        map.insert(Keypress::F(7), (Modifier::None, 0x40u8));
+        map.insert(Keypress::F(8), (Modifier::None, 0x41u8));
+        map.insert(Keypress::F(9), (Modifier::None, 0x42u8));
+        map.insert(Keypress::F(10), (Modifier::None, 0x43u8));
+        map.insert(Keypress::F(11), (Modifier::None, 0x44u8));
+        map.insert(Keypress::F(12), (Modifier::None, 0x45u8));
+
         map.insert(Keypress::Enter, (Modifier::None, 0x28u8));
+
         Converter { map }
     }
 
-    /// This function will convert a given `&str` to the least amount report buffers required.
-    /// 
-    /// # Examples
-    /// ```
-    /// use fobword_core::converter::{Converter, Modifier};
-    ///
-    /// let converter = Converter::new();
-    /// let result = converter.string_to_report_buffers("abcdef");
-    /// let expected = vec![
-    ///     vec![0, 0, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09], 
-    ///     vec![0, 0, 0, 0, 0, 0, 0, 0,]];
-    /// assert_eq!(result, Some(expected));
-    /// 
-    /// let result = converter.string_to_report_buffers("aA");
-    /// let expected = vec![
-    ///     vec![0, 0, 0x04, 0, 0, 0, 0, 0], 
-    ///     vec![0, 0, 0, 0, 0, 0, 0, 0,],
-    ///     vec![0x02, 0, 0x04, 0, 0, 0, 0, 0,],
-    ///     vec![0, 0, 0, 0, 0, 0, 0, 0,]];
-    /// assert_eq!(result, Some(expected));
-    /// ```
-    pub fn string_to_report_buffers(&self, word: &str) -> Option<Vec<Vec<u8>>>
+    /// Add a new Macro keypress to the converter with the given raw inputs.
+    pub fn add_macro(&mut self, modifier: Modifier, raw_key: u8)
     {
-        // vector of buffers that are to be send
-        let mut completed_report_buffers = Vec::new();
-        // current buffer we are writing to
-        let mut in_process_buffer = vec![0u8;8];
-        // index of the current buffer we are writing too
-        let mut index = 0;
-
-        let mut chars = word.chars();
-        if let Some(c) = chars.next()
-        {   
-            if let Some((char_shift_code, char_code)) = self.character_to_report_code(c)
-            {
-                self.write_first_char_to_buffer(&mut index, &mut in_process_buffer, char_code, char_shift_code);
-            }
-        }
-        else
-        {
-            return None
-        }        
-        
-        for i in chars
-        {
-            if let Some((char_shift_code, char_code)) = self.character_to_report_code(i)
-            {
-                if in_process_buffer.contains(&char_code)
-                {
-                    completed_report_buffers.push(in_process_buffer);
-                    completed_report_buffers.push(vec![0u8;8]);
-                    in_process_buffer = vec![0u8;8];
-    
-                    // The first char decides the "Shift" marker.
-                    self.write_first_char_to_buffer(&mut index, &mut in_process_buffer, char_code, char_shift_code);
-                    continue;
-                }
-                // This checks if the old buffer contains a character, if it does it needs to have a report in between where the key is not pressed
-                // If the index is the same as or higher than 6, we need to send the buffer since there can be only 6 character at a time
-                // And the last check is to see if the Shift marker is the same, else we need to send it and make a new buffer
-                else if completed_report_buffers.last().unwrap_or(&vec![0u8;8]).contains(&char_code) || 
-                        index >= 6 || 
-                        &in_process_buffer[0] != &(char_shift_code as u8)
-                {
-                    completed_report_buffers.push(in_process_buffer);
-                    in_process_buffer = vec![0u8;8];
-                    self.write_first_char_to_buffer(&mut index, &mut in_process_buffer, char_code, char_shift_code);
-                    continue;
-                };
-                self.write_to_buffer(&mut index, &mut in_process_buffer, char_code);
-            }
-        }
-        // Send the last buffer and an empty one to indicate all keys are released
-        completed_report_buffers.push(in_process_buffer);
-        completed_report_buffers.push(vec![0u8;8]);
-        Some(completed_report_buffers)
+        self.add_type(Keypress::Macro, modifier, raw_key);
     }
 
-    /// Attempts to retrieve `the HID report equivalent u8 and modifier key` from a lookup table with `character` as key.
-    /// 
-    /// If found returns an owned tuple of type `Some(<Modifier, u8>)`.
-    /// 
-    /// Will return `None`, if it cannot be found in the lookup table.
-    /// 
-    /// This will only work with ASCII characters.
-    /// 
+    /// Add a new Character keypress to the converter with the given raw inputs.
+    pub fn add_character(&mut self, ch: char, modifier: Modifier, raw_key: u8)
+    {
+        self.add_type(Keypress::Character(ch), modifier, raw_key);
+    }
+
+    /// Add a new Function keypress to the converter with the given raw inputs.
+    pub fn add_f_key(&mut self, f_number: u8, modifier: Modifier, raw_key: u8)
+    {
+        self.add_type(Keypress::F(f_number), modifier, raw_key);
+    }
+
+
+    /// Add a keypress-raw input (Modifier key, u8 keycode) pair into the Converter 
+    fn add_type(&mut self, keypress: Keypress, modifier: Modifier, raw_key: u8)
+    {
+        self.map.insert(keypress, (modifier, raw_key));
+    }
+
+    /// Remove a value from the Converter, after which the raw inputs will return default value.
+    pub fn remove(&mut self, keypress: &Keypress)
+    {
+        self.map.remove(keypress);
+    }
+
+
+    /// Remove a value from the Converter by using the value of the key-value pair.
+    pub fn remove_by_value(&mut self, modifier: &Modifier, raw_key: &u8)
+    {   
+        if let Some(pair) = self.map.iter().find(|(_key, raw)| raw.0 == *modifier && raw.1 == *raw_key)
+        {
+            let keypress = pair.0.clone();
+            self.remove(&keypress)
+        }
+    }
+
+    /// Convert a keypress into the corrosponding modifier key, u8 key code combination.
+    ///
     /// # Examples
     /// ```
-    /// use fobword_core::converter::{Converter, Modifier};
+    /// let converter = Converter::Default(); 
     ///
-    /// let converter = Converter::new();
-    /// let result = converter.character_to_report_code(&'a');
-    /// assert_eq!(result, Some((Modifier::None, 0x04)));
-    /// 
-    /// let result = converter.character_to_report_code(&'æ');
-    /// assert_eq!(result, None);
+    /// let keypress = Keypress::Character('Z');
+    /// assert_eq!((Modifier::Shift, 0x1du8), converter.convert_keypress(&keypress));
+    ///    
+    /// let keypress = Keypress::Character('💖');
+    /// assert_eq!((Modifier::None, 0x0u8), converter.convert_keypress(&keypress));
     /// ```
-    pub fn character_to_report_code(&self, character: char) -> Option<(Modifier, u8)>
+    pub fn convert_keypress(&self, keypress: &Keypress) -> (Modifier, u8)
     {
-        match self.map.get(&Keypress::Character(character))
+        if let Keypress::Undefined(modifier, code) = keypress
         {
-            Some(value) => Some(value.clone()),
-            None => None,
+            return (*modifier, *code)
+        }
+        match self.map.get(keypress)
+        {
+            Some(v) => v.clone(),
+            None => (Modifier::None, 0),
         }
     }
 
 
-    /// Attempts to retrieve `character` from a lookup table with `the HID report equivalent u8 and modifier key` as key.
-    /// 
-    /// If found returns an owned type `Some(char)`.
-    /// 
-    /// Will return `None`, if it cannot be found in the lookup table.
-    /// 
-    /// This will only work with ASCII characters.
-    /// 
-    /// # Examples
-    /// ```
-    /// use fobword_core::converter::{Converter, Modifier};
+    /// Convert the raw input into their corresponding keypress.
     ///
-    /// let converter = Converter::new();
-    /// let result = converter.report_code_to_character((Modifier::Shift, 0x04));
-    /// assert_eq!(result, Some('A'));
-    /// 
-    /// let result = converter.report_code_to_character((Modifier::None, 0xFF));
-    /// assert_eq!(result, None);
-    /// ```
-    pub fn report_code_to_keypress(&self, report_code: (Modifier, u8)) -> Keypress
-    {
-        match self.map.iter().find_map(|(key, val)| 
-            if val.0 == report_code.0 && val.1 == report_code.1
-            { 
-                Some(key) 
-            }
-            else
-            {
-                None
-            })
-        {
-            Some(value) => value.clone(),
-            None => Keypress::None,
-        }
-    }
-
-    /// Since there can be up to 6 characters in a single HID report, this will look at each spot and attempt to retrieve a character 
-    /// and combine them into Some(String).
-    /// 
+    /// A raw input will comprise a pressed modifier key and a u8 key code of the keys pressed on the keyboard.
+    /// The modifier key is necessary because the keycode 0x04 maps to both 'a' and 'A' depending if the shift (modifier key) is pressed.
+    ///
+    /// On an unknown raw input, this function will return a Keypress::Undefined(Modifier_key, Keycode) that holds the given inputs.
+    ///
     /// # Example
     /// ```
-    /// use fobword_core::converter::{Converter, Modifier};
+    /// let converter = Converter::default();
+    /// let modifier_key = Modifier::None;
+    /// let raw_key_code_a = 0x04u8;
+    /// assert_eq!(Keypress::Character('a'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
     ///
-    /// let converter = Converter::new();
-    /// let report_buffer = vec![0, 0, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09];
-    /// let result = converter.report_to_string(&report_buffer);
-    /// assert_eq!(result, Some(String::from("abcdef")));
+    /// let modifier_key = Modifier::Shift;
+    /// assert_eq!(Keypress::Character('A'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
+    ///
+    /// let modifier_key = Modifier::None;
+    /// let raw_key_code_a = 0x01u8;
+    /// assert_eq!(Keypress::Undefined(Modifier::None, 1), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
     /// ```
-    pub fn report_to_keypress(&self, queue: &mut VecDeque<Keypress>, report: &[u8], old_report: &[u8])
+    pub fn convert_rawinput(&self, modifier: &Modifier, raw_key: &u8) -> Keypress
     {
-        let control_code = Modifier::from(report[0]);
-        let s = &old_report[2..];
-        for i in report.iter().skip(2).filter(|x| x != &&0 && !s.contains(x))
+        if let Some(element) = self.map.iter().find(|(_key, raw)| raw.0 == *modifier && raw.1 == *raw_key)
         {
-            queue.push_back(self.report_code_to_keypress((control_code, *i)))
+            return *element.0 // 0 is the Keypress part of the element key-value pair
         }
-    }
-    
-    /// Resets the index, and set the Modifier bit
-    fn write_first_char_to_buffer<'a>(&self, index: &mut usize, buffer: &mut Vec<u8>, char_code: u8, modifier: Modifier)
-    {
-        *index = 0;
-        buffer[0] = modifier as u8;
-        self.write_to_buffer(index, buffer, char_code);
-    }
-
-    /// Write character to buffer and increment index
-    fn write_to_buffer<'a>(&self, index: &mut usize, buffer: &mut Vec<u8>, char_code: u8)
-    {
-        buffer[*index + 2] = char_code;
-        *index += 1;
+        Keypress::Undefined(*modifier, *raw_key)
     }
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, Hash, Eq)]
-#[non_exhaustive]
-/// Enum to indicate what key has been pressed
-pub enum Keypress
-{
-    /// The key can be translated to an ascii character
-    Character(char),
-    /// The enter key
-    Enter,
-    /// The macro combination (ctrl, shift, P)
-    Macro,
-    /// Not a usefull keypress (home key)
-    None,
-}
-
-/// Enum to hold all combinations of modifier keys that can be used in this crate
-#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Modifier
 {
     /// No modifier key is pressed
@@ -368,9 +305,12 @@ pub enum Modifier
 
 impl From<u8> for Modifier
 {
-    /// Will convert a u8 to a Modifier using byte operation to check which bits are set
+    /// Will convert a u8 to a Modifier using a byte operation to check which bits are set
     fn from(num: u8) -> Modifier
     {
+        // (num >> 4) bitshift the u8 to the right by 4 bits making it a u4
+        // (num & 15) will return the first 4 bits that are set by num
+        // the | will return all of the bits set by (num >> 4) and (num & 15)
         match (num >> 4) | (num & 15)
         {
             0 => Modifier::None,
@@ -391,5 +331,156 @@ impl From<u8> for Modifier
             15 => Modifier::CtrlShiftAltGui,
             _ => Modifier::None,
         }
+    }
+}
+
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub enum Keypress
+{
+    Character(char),
+    Undefined(Modifier, u8),
+    Enter,
+    Macro,
+    F(u8),
+}
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+
+    #[test]
+    fn test_new_converter()
+    {
+        let converter = Converter::new();
+
+        assert!(converter.map.is_empty());
+
+        let keypress = Keypress::Character('a');
+
+        assert_eq!((Modifier::None, 0x0u8), converter.convert_keypress(&keypress));
+
+        let modifier = Modifier::Ctrl;
+
+        let raw_key_code = 0x04u8; // The a key as defined by the HID USB usages and descriptions
+
+        assert_eq!(Keypress::Undefined(Modifier::Ctrl, 0x04u8), converter.convert_rawinput(&modifier, &raw_key_code));
+    }
+    
+    #[test]
+    fn test_converter_add_macro()
+    {
+        let mut converter = Converter::new();
+
+        assert!(!converter.map.contains_key(&Keypress::Macro));
+
+        let modifier = Modifier::Ctrl;
+
+        let raw_key_code = 0x04u8;
+
+        converter.add_macro(modifier, raw_key_code);
+
+        assert!(converter.map.contains_key(&Keypress::Macro));
+    }
+
+    #[test]
+    fn test_converter_add_character()
+    {
+        let mut converter = Converter::new();
+
+        assert!(!converter.map.contains_key(&Keypress::Character('a')));
+
+        let modifier = Modifier::None;
+
+        let raw_key_code = 0x04u8;
+
+        converter.add_character('a', modifier, raw_key_code);
+
+        assert!(converter.map.contains_key(&Keypress::Character('a')));
+    }
+
+    #[test]
+    fn test_convert_keypress_lowercase_character()
+    {
+        let converter = Converter::default();
+
+        let keypress = Keypress::Character('a');
+
+        assert_eq!((Modifier::None, 0x04u8), converter.convert_keypress(&keypress));
+
+        // unknown characters should return 0
+        let keypress = Keypress::Character('b');
+
+        assert_eq!((Modifier::None, 0x05u8), converter.convert_keypress(&keypress));
+    }
+
+    #[test]
+    fn test_convert_keypress_uppercase_character()
+    {
+        let converter = Converter::default();
+
+        let keypress = Keypress::Character('A');
+
+        assert_eq!((Modifier::Shift, 0x04u8), converter.convert_keypress(&keypress));
+
+        // unknown characters should return 0
+        let keypress = Keypress::Character('B');
+
+        assert_eq!((Modifier::Shift, 0x05u8), converter.convert_keypress(&keypress));
+    }
+
+    #[test]
+    fn test_convert_keypress_unknown_character()
+    {
+        let converter = Converter::default();
+
+        // unknown characters should return 0
+        let keypress = Keypress::Character('💖');
+
+        assert_eq!((Modifier::None, 0u8), converter.convert_keypress(&keypress));
+    }
+
+    #[test]
+    fn test_convert_rawinput_lowercase_character()
+    {
+        let converter = Converter::default();
+        let modifier_key = Modifier::None;
+        let raw_key_code_a = 0x04u8; // The a key on a qwerty keyboard
+
+        assert_eq!(Keypress::Character('a'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
+
+        let raw_key_code_b = 0x05u8;
+        
+        assert_eq!(Keypress::Character('b'), converter.convert_rawinput(&modifier_key, &raw_key_code_b));
+    }
+
+    #[test]
+    fn test_convert_rawinput_uppercase_character()
+    {
+        let converter = Converter::default();
+        let modifier_key = Modifier::Shift;
+        let raw_key_code_a = 0x04u8; // The a key on a qwerty keyboard
+
+        assert_eq!(Keypress::Character('A'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
+
+        let raw_key_code_b = 0x05u8;
+        
+        assert_eq!(Keypress::Character('B'), converter.convert_rawinput(&modifier_key, &raw_key_code_b));
+    }
+
+    #[test]
+    fn test_convert_rawinput_unknown_character()
+    {
+        let converter = Converter::default();
+        let modifier_key = Modifier::None;
+        let raw_key_code = 0x01u8;
+
+        assert_eq!(Keypress::Undefined(Modifier::None, 0x01u8), converter.convert_rawinput(&modifier_key, &raw_key_code));
+
+        let modifier_key = Modifier::Ctrl;
+        let raw_key_code = 0;
+
+        assert_eq!(Keypress::Undefined(Modifier::Ctrl, 0), converter.convert_rawinput(&modifier_key, &raw_key_code));
     }
 }
