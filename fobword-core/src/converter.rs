@@ -46,123 +46,131 @@ impl Converter
     /// ```
     pub fn default() -> Converter
     {
-        let mut map = HashMap::new();
+        use Keypress::{ Character, Enter, F };
+        use Modifier::{ None, Shift };
+        let mut map: HashMap<Keypress, (Modifier, u8)> = 
+        [
+            // Lowercase characters
+            (Character('a'), (None, 0x04u8)),
+            (Character('b'), (None, 0x05u8)),
+            (Character('c'), (None, 0x06u8)),
+            (Character('d'), (None, 0x07u8)),
+            (Character('e'), (None, 0x08u8)),
+            (Character('f'), (None, 0x09u8)),
+            (Character('g'), (None, 0x0au8)),
+            (Character('h'), (None, 0x0bu8)),
+            (Character('i'), (None, 0x0cu8)),
+            (Character('j'), (None, 0x0du8)),
+            (Character('k'), (None, 0x0eu8)),
+            (Character('l'), (None, 0x0fu8)),
+            (Character('m'), (None, 0x10u8)),
+            (Character('n'), (None, 0x11u8)),
+            (Character('o'), (None, 0x12u8)),
+            (Character('p'), (None, 0x13u8)),
+            (Character('q'), (None, 0x14u8)),
+            (Character('r'), (None, 0x15u8)),
+            (Character('s'), (None, 0x16u8)),
+            (Character('t'), (None, 0x17u8)),
+            (Character('u'), (None, 0x18u8)),
+            (Character('v'), (None, 0x19u8)),
+            (Character('w'), (None, 0x1au8)),
+            (Character('x'), (None, 0x1bu8)),
+            (Character('y'), (None, 0x1cu8)),
+            (Character('z'), (None, 0x1du8)),
 
-        map.insert(Keypress::Character('a'), (Modifier::None, 0x04u8));
-        map.insert(Keypress::Character('b'), (Modifier::None, 0x05u8));
-        map.insert(Keypress::Character('c'), (Modifier::None, 0x06u8));
-        map.insert(Keypress::Character('d'), (Modifier::None, 0x07u8));
-        map.insert(Keypress::Character('e'), (Modifier::None, 0x08u8));
-        map.insert(Keypress::Character('f'), (Modifier::None, 0x09u8));
-        map.insert(Keypress::Character('g'), (Modifier::None, 0x0au8));
-        map.insert(Keypress::Character('h'), (Modifier::None, 0x0bu8));
-        map.insert(Keypress::Character('i'), (Modifier::None, 0x0cu8));
-        map.insert(Keypress::Character('j'), (Modifier::None, 0x0du8));
-        map.insert(Keypress::Character('k'), (Modifier::None, 0x0eu8));
-        map.insert(Keypress::Character('l'), (Modifier::None, 0x0fu8));
-        map.insert(Keypress::Character('m'), (Modifier::None, 0x10u8));
-        map.insert(Keypress::Character('n'), (Modifier::None, 0x11u8));
-        map.insert(Keypress::Character('o'), (Modifier::None, 0x12u8));
-        map.insert(Keypress::Character('p'), (Modifier::None, 0x13u8));
-        map.insert(Keypress::Character('q'), (Modifier::None, 0x14u8));
-        map.insert(Keypress::Character('r'), (Modifier::None, 0x15u8));
-        map.insert(Keypress::Character('s'), (Modifier::None, 0x16u8));
-        map.insert(Keypress::Character('t'), (Modifier::None, 0x17u8));
-        map.insert(Keypress::Character('u'), (Modifier::None, 0x18u8));
-        map.insert(Keypress::Character('v'), (Modifier::None, 0x19u8));
-        map.insert(Keypress::Character('w'), (Modifier::None, 0x1au8));
-        map.insert(Keypress::Character('x'), (Modifier::None, 0x1bu8));
-        map.insert(Keypress::Character('y'), (Modifier::None, 0x1cu8));
-        map.insert(Keypress::Character('z'), (Modifier::None, 0x1du8));
+            // Uppercase characters
+            (Character('A'), (Shift, 0x04u8)),
+            (Character('B'), (Shift, 0x05u8)),
+            (Character('C'), (Shift, 0x06u8)),
+            (Character('D'), (Shift, 0x07u8)),
+            (Character('E'), (Shift, 0x08u8)),
+            (Character('F'), (Shift, 0x09u8)),
+            (Character('G'), (Shift, 0x0au8)),
+            (Character('H'), (Shift, 0x0bu8)),
+            (Character('I'), (Shift, 0x0cu8)),
+            (Character('J'), (Shift, 0x0du8)),
+            (Character('K'), (Shift, 0x0eu8)),
+            (Character('L'), (Shift, 0x0fu8)),
+            (Character('M'), (Shift, 0x10u8)),
+            (Character('N'), (Shift, 0x11u8)),
+            (Character('O'), (Shift, 0x12u8)),
+            (Character('P'), (Shift, 0x13u8)),
+            (Character('Q'), (Shift, 0x14u8)),
+            (Character('R'), (Shift, 0x15u8)),
+            (Character('S'), (Shift, 0x16u8)),
+            (Character('T'), (Shift, 0x17u8)),
+            (Character('U'), (Shift, 0x18u8)),
+            (Character('V'), (Shift, 0x19u8)),
+            (Character('W'), (Shift, 0x1au8)),
+            (Character('X'), (Shift, 0x1bu8)),
+            (Character('Y'), (Shift, 0x1cu8)),
+            (Character('Z'), (Shift, 0x1du8)),
 
-        map.insert(Keypress::Character('A'), (Modifier::Shift, 0x04u8));
-        map.insert(Keypress::Character('B'), (Modifier::Shift, 0x05u8));
-        map.insert(Keypress::Character('C'), (Modifier::Shift, 0x06u8));
-        map.insert(Keypress::Character('D'), (Modifier::Shift, 0x07u8));
-        map.insert(Keypress::Character('E'), (Modifier::Shift, 0x08u8));
-        map.insert(Keypress::Character('F'), (Modifier::Shift, 0x09u8));
-        map.insert(Keypress::Character('G'), (Modifier::Shift, 0x0au8));
-        map.insert(Keypress::Character('H'), (Modifier::Shift, 0x0bu8));
-        map.insert(Keypress::Character('I'), (Modifier::Shift, 0x0cu8));
-        map.insert(Keypress::Character('J'), (Modifier::Shift, 0x0du8));
-        map.insert(Keypress::Character('K'), (Modifier::Shift, 0x0eu8));
-        map.insert(Keypress::Character('L'), (Modifier::Shift, 0x0fu8));
-        map.insert(Keypress::Character('M'), (Modifier::Shift, 0x10u8));
-        map.insert(Keypress::Character('N'), (Modifier::Shift, 0x11u8));
-        map.insert(Keypress::Character('O'), (Modifier::Shift, 0x12u8));
-        map.insert(Keypress::Character('P'), (Modifier::Shift, 0x13u8));
-        map.insert(Keypress::Character('Q'), (Modifier::Shift, 0x14u8));
-        map.insert(Keypress::Character('R'), (Modifier::Shift, 0x15u8));
-        map.insert(Keypress::Character('S'), (Modifier::Shift, 0x16u8));
-        map.insert(Keypress::Character('T'), (Modifier::Shift, 0x17u8));
-        map.insert(Keypress::Character('U'), (Modifier::Shift, 0x18u8));
-        map.insert(Keypress::Character('V'), (Modifier::Shift, 0x19u8));
-        map.insert(Keypress::Character('W'), (Modifier::Shift, 0x1au8));
-        map.insert(Keypress::Character('X'), (Modifier::Shift, 0x1bu8));
-        map.insert(Keypress::Character('Y'), (Modifier::Shift, 0x1cu8));
-        map.insert(Keypress::Character('Z'), (Modifier::Shift, 0x1du8));
+            // Numbers
+            (Character('1'), (None, 0x1eu8)),
+            (Character('2'), (None, 0x1fu8)),
+            (Character('3'), (None, 0x20u8)),
+            (Character('4'), (None, 0x21u8)),
+            (Character('5'), (None, 0x22u8)),
+            (Character('6'), (None, 0x23u8)),
+            (Character('7'), (None, 0x24u8)),
+            (Character('8'), (None, 0x25u8)),
+            (Character('9'), (None, 0x26u8)),
+            (Character('0'), (None, 0x27u8)),
 
-        map.insert(Keypress::Character('1'), (Modifier::None, 0x1eu8));
-        map.insert(Keypress::Character('2'), (Modifier::None, 0x1fu8));
-        map.insert(Keypress::Character('3'), (Modifier::None, 0x20u8));
-        map.insert(Keypress::Character('4'), (Modifier::None, 0x21u8));
-        map.insert(Keypress::Character('5'), (Modifier::None, 0x22u8));
-        map.insert(Keypress::Character('6'), (Modifier::None, 0x23u8));
-        map.insert(Keypress::Character('7'), (Modifier::None, 0x24u8));
-        map.insert(Keypress::Character('8'), (Modifier::None, 0x25u8));
-        map.insert(Keypress::Character('9'), (Modifier::None, 0x26u8));
-        map.insert(Keypress::Character('0'), (Modifier::None, 0x27u8));
+            // Symbols
+            (Character('!'), (Shift, 0x1eu8)),
+            (Character('@'), (Shift, 0x1fu8)),
+            (Character('#'), (Shift, 0x20u8)),
+            (Character('$'), (Shift, 0x21u8)),
+            (Character('%'), (Shift, 0x22u8)),
+            (Character('^'), (Shift, 0x23u8)),
+            (Character('&'), (Shift, 0x24u8)),
+            (Character('*'), (Shift, 0x25u8)),
+            (Character('('), (Shift, 0x26u8)),
+            (Character(')'), (Shift, 0x27u8)),
 
-        map.insert(Keypress::Character('!'), (Modifier::Shift, 0x1eu8));
-        map.insert(Keypress::Character('@'), (Modifier::Shift, 0x1fu8));
-        map.insert(Keypress::Character('#'), (Modifier::Shift, 0x20u8));
-        map.insert(Keypress::Character('$'), (Modifier::Shift, 0x21u8));
-        map.insert(Keypress::Character('%'), (Modifier::Shift, 0x22u8));
-        map.insert(Keypress::Character('^'), (Modifier::Shift, 0x23u8));
-        map.insert(Keypress::Character('&'), (Modifier::Shift, 0x24u8));
-        map.insert(Keypress::Character('*'), (Modifier::Shift, 0x25u8));
-        map.insert(Keypress::Character('('), (Modifier::Shift, 0x26u8));
-        map.insert(Keypress::Character(')'), (Modifier::Shift, 0x27u8));
+            (Character('\t'), (None, 0x2bu8)),
+            (Character(' '), (None, 0x2cu8)),
+            (Character('-'), (None, 0x2du8)),
+            (Character('_'), (Shift, 0x2du8)),
+            (Character('='), (None, 0x2eu8)),
+            (Character('+'), (Shift, 0x2eu8)),
+            (Character('['), (None, 0x2fu8)),
+            (Character('{'), (Shift, 0x2fu8)),
+            (Character(']'), (None, 0x30u8)),
+            (Character('}'), (Shift, 0x30u8)),
+            (Character('\\'), (None, 0x31u8)),
+            (Character('|'), (Shift, 0x31u8)),
+            (Character(','), (None, 0x33u8)),
+            (Character(':'), (Shift, 0x33u8)),
+            (Character('\''), (None, 0x34u8)),
+            (Character('\"'), (Shift, 0x34u8)),
+            (Character('`'), (None, 0x35u8)),
+            (Character('~'), (Shift, 0x35u8)),
+            (Character(','), (None, 0x36u8)),
+            (Character('<'), (Shift, 0x36u8)),
+            (Character('.'), (None, 0x37u8)),
+            (Character('>'), (Shift, 0x37u8)),
+            (Character('/'), (None, 0x38u8)),
+            (Character('?'), (Shift, 0x38u8)),
 
-        map.insert(Keypress::Character('\t'), (Modifier::None, 0x2bu8));
-        map.insert(Keypress::Character(' '), (Modifier::None, 0x2cu8));
-        map.insert(Keypress::Character('-'), (Modifier::None, 0x2du8));
-        map.insert(Keypress::Character('_'), (Modifier::Shift, 0x2du8));
-        map.insert(Keypress::Character('='), (Modifier::None, 0x2eu8));
-        map.insert(Keypress::Character('+'), (Modifier::Shift, 0x2eu8));
-        map.insert(Keypress::Character('['), (Modifier::None, 0x2fu8));
-        map.insert(Keypress::Character('{'), (Modifier::Shift, 0x2fu8));
-        map.insert(Keypress::Character(']'), (Modifier::None, 0x30u8));
-        map.insert(Keypress::Character('}'), (Modifier::Shift, 0x30u8));
-        map.insert(Keypress::Character('\\'), (Modifier::None, 0x31u8));
-        map.insert(Keypress::Character('|'), (Modifier::Shift, 0x31u8));
-        map.insert(Keypress::Character(';'), (Modifier::None, 0x33u8));
-        map.insert(Keypress::Character(':'), (Modifier::Shift, 0x33u8));
-        map.insert(Keypress::Character('\''), (Modifier::None, 0x34u8));
-        map.insert(Keypress::Character('\"'), (Modifier::Shift, 0x34u8));
-        map.insert(Keypress::Character('`'), (Modifier::None, 0x35u8));
-        map.insert(Keypress::Character('~'), (Modifier::Shift, 0x35u8));
-        map.insert(Keypress::Character(','), (Modifier::None, 0x36u8));
-        map.insert(Keypress::Character('<'), (Modifier::Shift, 0x36u8));
-        map.insert(Keypress::Character('.'), (Modifier::None, 0x37u8));
-        map.insert(Keypress::Character('>'), (Modifier::Shift, 0x37u8));
-        map.insert(Keypress::Character('/'), (Modifier::None, 0x38u8));
-        map.insert(Keypress::Character('?'), (Modifier::Shift, 0x38u8));
+            // The F keys
+            (F(1), (None, 0x3au8)),
+            (F(2), (None, 0x3bu8)),
+            (F(3), (None, 0x3cu8)),
+            (F(4), (None, 0x3du8)),
+            (F(5), (None, 0x3eu8)),
+            (F(6), (None, 0x3fu8)),
+            (F(7), (None, 0x40u8)),
+            (F(8), (None, 0x41u8)),
+            (F(9), (None, 0x42u8)),
+            (F(10), (None, 0x43u8)),
+            (F(11), (None, 0x44u8)),
+            (F(12), (None, 0x45u8)),
 
-        map.insert(Keypress::F(1), (Modifier::None, 0x3au8));
-        map.insert(Keypress::F(2), (Modifier::None, 0x3bu8));
-        map.insert(Keypress::F(3), (Modifier::None, 0x3cu8));
-        map.insert(Keypress::F(4), (Modifier::None, 0x3du8));
-        map.insert(Keypress::F(5), (Modifier::None, 0x3eu8));
-        map.insert(Keypress::F(6), (Modifier::None, 0x3fu8));
-        map.insert(Keypress::F(7), (Modifier::None, 0x40u8));
-        map.insert(Keypress::F(8), (Modifier::None, 0x41u8));
-        map.insert(Keypress::F(9), (Modifier::None, 0x42u8));
-        map.insert(Keypress::F(10), (Modifier::None, 0x43u8));
-        map.insert(Keypress::F(11), (Modifier::None, 0x44u8));
-        map.insert(Keypress::F(12), (Modifier::None, 0x45u8));
-
-        map.insert(Keypress::Enter, (Modifier::None, 0x28u8));
+            (Enter, (None, 0x28u8))
+        ].iter().cloned().collect();
 
         Converter { map }
     }
@@ -217,7 +225,7 @@ impl Converter
     ///
     /// let keypress = Keypress::Character('Z');
     /// assert_eq!((Modifier::Shift, 0x1du8), converter.convert_keypress(&keypress));
-    ///    
+    /// 
     /// let keypress = Keypress::Character('💖');
     /// assert_eq!((Modifier::None, 0x0u8), converter.convert_keypress(&keypress));
     /// ```
@@ -308,9 +316,7 @@ impl From<u8> for Modifier
     /// Will convert a u8 to a Modifier using a byte operation to check which bits are set
     fn from(num: u8) -> Modifier
     {
-        // (num >> 4) bitshift the u8 to the right by 4 bits making it a u4
-        // (num & 15) will return the first 4 bits that are set by num
-        // the | will return all of the bits set by (num >> 4) and (num & 15)
+        // 
         match (num >> 4) | (num & 15)
         {
             0 => Modifier::None,
