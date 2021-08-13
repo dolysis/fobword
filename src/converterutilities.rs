@@ -1,6 +1,26 @@
 use fobword_core::converter::{Converter, Keypress, Modifier};
 use std::collections::VecDeque;
 
+
+/// Convert a string to raw input buffers.
+///
+/// This is a convience function to convert a String into the least ammount of raw input reports.
+///
+/// # Example
+/// ```
+/// let conv = Converter::default();
+/// let word = "haha";
+/// 
+/// let buffers = converterutilities::string_to_report_buffers(&conv, &word).unwrap();
+///
+/// let expected = vec![
+///     vec![0, 0, 0x0b, 0x04, 0, 0, 0, 0], 
+///     vec![0, 0, 0, 0, 0, 0, 0, 0,],
+///     vec![0, 0, 0x0b, 0x04, 0, 0, 0, 0],
+///     vec![0, 0, 0, 0, 0, 0, 0, 0,]];
+/// 
+/// assert_eq!(expected, buffers);
+/// ```
 pub fn string_to_report_buffers(conv: &Converter, word: &str) -> Option<Vec<Vec<u8>>>
 {
     // vector of buffers that are to be send
@@ -69,6 +89,8 @@ fn write_to_buffer<'a>(index: &mut usize, buffer: &mut Vec<u8>, char_code: u8)
     *index += 1;
 }
 
+
+///
 pub fn report_to_keypress(conv: &Converter, queue: &mut VecDeque<Keypress>, report: &[u8], old_report: &[u8])
 {
     let modifier = Modifier::from(report[0]);
