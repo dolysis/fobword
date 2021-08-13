@@ -316,7 +316,9 @@ impl From<u8> for Modifier
     /// Will convert a u8 to a Modifier using a byte operation to check which bits are set
     fn from(num: u8) -> Modifier
     {
-        // 
+        // Left modifier keys use the lower half of the u8
+        // Right modifier keys use the upper half of the u8
+        // Here we combine them into one Modifier.
         match (num >> 4) | (num & 15)
         {
             0 => Modifier::None,
