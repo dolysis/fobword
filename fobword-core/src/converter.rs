@@ -274,6 +274,9 @@ impl Converter
     }
 }
 
+/// Keyboard modifier input values
+///
+/// Type Modifier represents the pressed combinations of the modifier keys on the keyboard (ctrl, shift, alt, gui or none).
 #[derive(Debug, PartialEq, Clone, Copy, Hash, Eq)]
 pub enum Modifier
 {
@@ -342,15 +345,23 @@ impl From<u8> for Modifier
     }
 }
 
-
+/// Keyboard input values.
+///
+/// Type Keypress represents the different type of inputs from the keyboard
+#[non_exhaustive]
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum Keypress
 {
+    /// Any of the number, symbols or alphabetical keys
     Character(char),
-    Undefined(Modifier, u8),
+    // The enter key
     Enter,
-    Macro,
-    F(u8),
+    // The F keys
+    F(u8),       
+    // A combination of a modifier key and regular input defined by user
+    Macro, 
+    // A key or combination of keys that do not fall in the other Keypress values
+    Undefined(Modifier, u8),
 }
 
 #[cfg(test)]
