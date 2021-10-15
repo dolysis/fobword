@@ -72,6 +72,7 @@ impl IOhelper
     {
         let old_report = self.buffer.clone();
         self.reader.read_exact(&mut self.buffer)?;
+        println!("{:?}", self.buffer);
         converterutilities::report_to_keypress(conv, &mut self.queue, &self.buffer, &old_report);
         Ok(())
     }

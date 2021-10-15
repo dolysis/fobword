@@ -53,6 +53,9 @@ impl App
             match command.as_ref()
             {
                 "" => self.iohelper.write_key(&Keypress::Macro, &self.converter)?,
+                "lock" => self.data.lock(&self.iohelper.read_line(&self.converter)?)?,
+                "unlock" => self.data.unlock(&self.iohelper.read_line(&self.converter)?)?,
+                "new" => self.action_create_macro()?,
                 "save" => self.action_save_data()?,
                 "exit" => break,
                 _ => self.action_use_macro(&command)?,
@@ -66,12 +69,19 @@ impl App
         let mut key = self.iohelper.next_key(&self.converter)?;
         while key != Keypress::Macro
         {
+            println!("{:?}", key);
             self.iohelper.write_key(&key, &self.converter)?;
             key = self.iohelper.next_key(&self.converter)?;
         }
         Ok(())
     }
 
+    fn action_create_macro(&mut self) -> Result<(), DataHandleError>
+    {
+        let name = self.iohelper.read_line(&self.converter)?;
+        let pass = self.iohelper.read_line(&self.converter)?;
+        self.data.insert(name, pass, None, None)
+    }
 
     fn action_use_macro(&mut self, command: &str) -> Result<(), DataHandleError>
     {
@@ -92,8 +102,7 @@ impl App
         let mut file =  OpenOptions::new().write(true).truncate(true).open("/home/pi/config.yaml")?;
         let mut config = Config::new(Some(self.settings.clone()), Some(self.data.clone()));
         let pass = self.iohelper.read_line(&self.converter)?;
-        println!("{:?} pass", pass);
-        let buffer = config.to_yaml("harry")?;
+        let buffer = config.to_encrypted_yaml(&pass)?;
 
         file.write_all(buffer.as_bytes())?;
         Ok(())

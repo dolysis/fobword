@@ -9,14 +9,14 @@ use std::collections::VecDeque;
 /// # Example
 /// ```
 /// let conv = Converter::default();
-/// let word = "haha";
+/// let word = "test";
 /// 
 /// let buffers = converterutilities::string_to_report_buffers(&conv, &word).unwrap();
 ///
 /// let expected = vec![
-///     vec![0, 0, 0x0b, 0x04, 0, 0, 0, 0], 
+///     vec![0, 0, 0x17, 0x08, 0x16, 0, 0, 0], 
 ///     vec![0, 0, 0, 0, 0, 0, 0, 0,],
-///     vec![0, 0, 0x0b, 0x04, 0, 0, 0, 0],
+///     vec![0, 0, 0x17, 0, 0, 0, 0, 0],
 ///     vec![0, 0, 0, 0, 0, 0, 0, 0,]];
 /// 
 /// assert_eq!(expected, buffers);
@@ -90,7 +90,9 @@ fn write_to_buffer<'a>(index: &mut usize, buffer: &mut Vec<u8>, char_code: u8)
 }
 
 
+/// Convert a raw input report into Keypress values and add them to the queue.
 ///
+/// 
 pub fn report_to_keypress(conv: &Converter, queue: &mut VecDeque<Keypress>, report: &[u8], old_report: &[u8])
 {
     let modifier = Modifier::from(report[0]);

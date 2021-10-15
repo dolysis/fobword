@@ -48,7 +48,7 @@ impl Converter
     {
         use Keypress::{ Character, Enter, F };
         use Modifier::{ None, Shift };
-        let mut map: HashMap<Keypress, (Modifier, u8)> = 
+        let map: HashMap<Keypress, (Modifier, u8)> = 
         [
             // Lowercase characters
             (Character('a'), (None, 0x04u8)),

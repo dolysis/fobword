@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Result;
 use std::str;
 use serde::{Serialize, Deserialize};
 use serde::de::DeserializeOwned;
@@ -9,12 +10,10 @@ use argon2::{Argon2, PasswordHasher};
 use rand::Rng;
 use crate::error::DataHandleError;
 
+
+/// A configuration struct with optional settings and/or password-encryptable data.
+///
 /// 
-///
-///
-///
-///
-///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config<T>
 {
@@ -26,7 +25,14 @@ pub struct Config<T>
 impl<'de, T> Config<T>
 where T: Serialize + DeserializeOwned
 {
-    pub fn to_yaml(&mut self, password: &str) -> Result<String, DataHandleError>
+    /// Serialize the configuration as a string of YAML.
+    pub fn to_yaml(&mut self) -> Result<String, DataHandleError>
+    {
+        Ok(serde_yaml::to_string(&self)?)
+    }
+
+    /// Serialize the configuration as a string of YAML, and encrypt the data with the password if present.
+    pub fn to_encrypted_yaml(&mut self, password: &str) -> Result<String, DataHandleError>
     {
         if let Some(d) = &mut self.data
         {
@@ -34,9 +40,10 @@ where T: Serialize + DeserializeOwned
             d.lock(password)?;
         }
 
-        Ok(serde_yaml::to_string(&self)?)
+        self.to_yaml()
     }
 
+    /// Deserialize the configuration from a string of YAML.
     pub fn from_yaml(buffer: &str) -> Result<Self, DataHandleError>
     {
         Ok(serde_yaml::from_str(buffer)?)
@@ -51,19 +58,14 @@ impl<T> Config<T>
     }
 }
 
+/// 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Data
 {
-    #[serde(skip, default = "default_lock")]
     is_locked: bool,
     salt: String,
     key: Vec<u8>,
     pub data: HashMap<String, DataInformation>
-}
-
-fn default_lock() -> bool
-{
-    true
 }
 
 impl Data
@@ -77,6 +79,9 @@ impl Data
         Data { is_locked: false, salt, key, data }
     }
 
+    /// Lock the data with a password.
+    ///
+    /// The data is locked using the Aes256Gcm algorythm and the key of the Aes256Gcm is encrypted using Argon2 with a password.
     pub fn lock(&mut self, password: &str) -> Result<(), DataHandleError>
     {
         if self.is_locked
@@ -93,6 +98,8 @@ impl Data
         self.key = AesHelper::encrypt_with_key_to_b64(hash.as_bytes(), self.key.as_ref())?.as_bytes().to_owned();
 
         self.salt = salt.as_str().to_owned();
+
+        self.is_locked = true;
 
         return Ok(())
     }
@@ -118,7 +125,7 @@ impl Data
     {
         if self.is_locked
         {
-            return Err(DataHandleError::LockedData("Can't update encryption, data is locked".to_owned()))
+            return Err(DataHandleError::LockedData("Data is already locked".to_owned()))
         }
 
         let mut new_key = vec![0u8;32];
@@ -216,6 +223,7 @@ fn generate_password(password_length: u8, symbol_level: SymbolLevel) -> String
     generated_pass
 }
 
+/// 
 struct AesHelper{}
 
 impl AesHelper
