@@ -131,6 +131,7 @@ name = "dys-template"
 version = "0.1.0"
 dependencies = [
  "fobword-core",
+ "password-hash",
  "serde",
  "serde_yaml",
 ]

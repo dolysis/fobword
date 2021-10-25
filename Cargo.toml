@@ -10,3 +10,4 @@ edition = "2018"
 fobword-core = {path = "fobword-core"}
 serde_yaml = "0.8"
 serde = { version = "1.0", features = ["derive"] }
+password-hash = "0.2.1"
