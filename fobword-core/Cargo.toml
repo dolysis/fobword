@@ -1,13 +1,16 @@
 [package]
-name = "dys-template"
+name = "fobword-core"
 version = "0.1.0"
-authors = ["emucc <github@elrimer.com>"]
+authors = ["uwu"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fobword-core = {path = "fobword-core"}
 serde_yaml = "0.8"
 serde = { version = "1.0", features = ["derive"] }
+rand = { version = "0.8.3", features = ["getrandom"] }
+aes-gcm = "0.9.2"
+argon2 = "0.2.1"
+base64 = "0.13.0"
 password-hash = "0.2.1"
