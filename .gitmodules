@@ -1,0 +1,3 @@
+[submodule "SSD1306-Terminal"]
+	path = SSD1306-Terminal
+	url = https://github.com/iRaiko/SSD1306-Terminal
