@@ -38,7 +38,7 @@ impl Converter
 
 
     /// Constructs a Converter with  
-    /// default mapping for keyboard codes as per USB HID Usages and Descriptions document: https://usb.org/sites/default/files/hut1_22.pdf
+    /// default querty mapping for keyboard codes as per USB HID Usages and Descriptions document: https://usb.org/sites/default/files/hut1_22.pdf
     ///
     /// # Examples
     /// ```
@@ -46,7 +46,7 @@ impl Converter
     /// ```
     pub fn default() -> Converter
     {
-        use Keypress::{ Character, Enter, F };
+        use Keypress::{ Character, Enter, F, Backspace };
         use Modifier::{ None, Shift };
         let map: HashMap<Keypress, (Modifier, u8)> = 
         [
@@ -169,11 +169,13 @@ impl Converter
             (F(11), (None, 0x44u8)),
             (F(12), (None, 0x45u8)),
 
-            (Enter, (None, 0x28u8))
+            (Enter, (None, 0x28u8)),
+            (Backspace, (None, 0x2Au8))
         ].iter().cloned().collect();
 
         Converter { map }
     }
+
 
     /// Add a new Macro keypress to the converter with the given raw inputs.
     pub fn add_macro(&mut self, modifier: Modifier, raw_key: u8)
@@ -360,6 +362,8 @@ pub enum Keypress
     F(u8),       
     // A combination of a modifier key and regular input defined by user
     Macro, 
+    // The backspace key
+    Backspace,
     // A key or combination of keys that do not fall in the other Keypress values
     Undefined(Modifier, u8),
 }

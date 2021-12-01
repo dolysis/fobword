@@ -66,6 +66,7 @@ impl App
                     "save" => self.action_save_data(&mut data)?,
                     "exit" => break 'outer,
                     "change" => self.action_change_password()?,
+                    "macro" => self.action_change_macro()?,
                     _ => self.action_use_macro(&data, &command)?,
                 }
 
@@ -77,12 +78,23 @@ impl App
 
     fn passthrough_loop(&mut self) -> Result<(), DataHandleError>
     {
-        let mut key = self.iohelper.next_key(&self.converter)?;
-        while key != Keypress::Macro
+        let raw_macro = self.converter.convert_keypress(&Keypress::Macro);
+        let macro_buffer = [raw_macro.0 as u8, 0 , raw_macro.1, 0 ,0 ,0,0,0];
+        let mut buffer = [0u8;8];
+        while macro_buffer != buffer
         {
-            self.iohelper.write_key(&key, &self.converter)?;
-            key = self.iohelper.next_key(&self.converter)?;
+            self.iohelper.write_to_file(&buffer)?;
+            self.iohelper.reader.read_exact(&mut buffer)?;
         }
+        Ok(())
+    }
+
+    fn action_change_macro(&mut self) -> Result<(), DataHandleError>
+    {
+        let key = self.iohelper.next_key(&self.converter)?;
+        let raw_key = self.converter.convert_keypress(&key);
+        self.converter.add_macro(raw_key.0, raw_key.1);
+        self.settings.macro_key = vec![raw_key.0 as u8, 0, raw_key.1, 0, 0, 0, 0 ,0];
         Ok(())
     }
 

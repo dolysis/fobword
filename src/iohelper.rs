@@ -24,7 +24,7 @@ impl IOhelper
     /// Create a new helper from stuff
     pub(crate) fn new(reader: Box<dyn BufRead>, writer: Box<dyn Write>) -> IOhelper
     {
-        let buffer = [0u8;8];
+        let buffer = [0u8; 8];
         let queue = VecDeque::new();
         IOhelper { reader, writer, buffer , queue}
     }
@@ -88,6 +88,7 @@ impl IOhelper
                 Keypress::Character(character) => result_string.push(character),
                 Keypress::Enter => return Ok(result_string),
                 Keypress::Macro => return Ok(result_string),
+                Keypress::Backspace => { result_string.pop(); },
                 _ => continue,
             }
         }
