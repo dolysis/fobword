@@ -1,6 +1,7 @@
 use fobword_core::error::DataHandleError;
 use fobword_core::converter::{Converter, Keypress, Modifier};
 use fobword_core::config::{Config, Data, LockedData};
+use SSD1306_Terminal::window::Window;
 use std::io::{BufRead, BufReader, Write};
 use std::fs::OpenOptions;
 use serde::{Serialize, Deserialize};
@@ -13,6 +14,7 @@ pub struct App
     converter: Converter,
     data: LockedData,
     settings: AppSettings,
+    window: Window,
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AppSettings
@@ -36,7 +38,9 @@ impl App
         let writer: Box<dyn Write> = Box::new(OpenOptions::new().write(true).open(&settings.output)?);
         let iohelper = IOhelper::new(reader, writer);
 
-        Ok(App { iohelper , converter, data, settings})
+        let window = Window::new("/dev/i2c-0", 0x3c)?;
+
+        Ok(App { iohelper , converter, data, settings, window})
     }
 
 
@@ -46,7 +50,7 @@ impl App
         {      
             self.passthrough_loop()?;
 
-            println!("Please enter password to unlock");
+            self.window.print_to_buffer("Please enter device password:")?;
             let mut data = match self.data.unlock(&self.iohelper.read_line(&self.converter)?)
             {
                 Ok(value) => value,
@@ -78,6 +82,7 @@ impl App
 
     fn passthrough_loop(&mut self) -> Result<(), DataHandleError>
     {
+        self.window.sleep()?;
         let raw_macro = self.converter.convert_keypress(&Keypress::Macro);
         let macro_buffer = [raw_macro.0 as u8, 0 , raw_macro.1, 0 ,0 ,0,0,0];
         let mut buffer = [0u8;8];
@@ -86,6 +91,7 @@ impl App
             self.iohelper.write_to_file(&buffer)?;
             self.iohelper.reader.read_exact(&mut buffer)?;
         }
+        self.window.awaken()?;
         Ok(())
     }
 
