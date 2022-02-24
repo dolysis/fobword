@@ -1,0 +1,5 @@
+rustflags = [
+    "-C", "link-arg=-static",
+    "-C", "target-feature=+crt-static",
+    "-C", "link-self-contained=yes",
+]

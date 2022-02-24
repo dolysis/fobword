@@ -5,7 +5,7 @@ use std::collections::HashMap;
 /// ```
 /// let converter = Converter::default();
 ///
-/// let modifier_key = Modifier::None;
+/// let modifier_key = Modifier::NoModifier;
 /// let raw_key_code_a = 0x04u8;
 /// assert_eq!(Keypress::Character('a'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
 ///
@@ -15,7 +15,8 @@ use std::collections::HashMap;
 #[derive(Debug)]
 pub struct Converter
 {
-    map: HashMap<Keypress, (Modifier, u8)>
+    input_map: HashMap<(Modifier, u8), Key>,
+    output_map: HashMap<Key, (Modifier, u8)>
 }
 
 impl Converter
@@ -31,14 +32,14 @@ impl Converter
     /// ```
     pub fn new() -> Converter
     {
-        let map = HashMap::new();
-
-        Converter { map }
+        let input_map = HashMap::new();
+        let output_map = HashMap::new();
+        Converter { input_map, output_map }
     }
 
 
     /// Constructs a Converter with  
-    /// default mapping for keyboard codes as per USB HID Usages and Descriptions document: https://usb.org/sites/default/files/hut1_22.pdf
+    /// default querty mapping for keyboard codes as per USB HID Usages and Descriptions document: https://usb.org/sites/default/files/hut1_22.pdf
     ///
     /// # Examples
     /// ```
@@ -46,37 +47,37 @@ impl Converter
     /// ```
     pub fn default() -> Converter
     {
-        use Keypress::{ Character, Enter, F };
-        use Modifier::{ None, Shift };
-        let map: HashMap<Keypress, (Modifier, u8)> = 
+        use Key::{ Character, Enter, F, Backspace };
+        use Modifier::{ NoModifier, Shift };
+        let pairs: Vec<(Key, (Modifier, u8))> = 
         [
             // Lowercase characters
-            (Character('a'), (None, 0x04u8)),
-            (Character('b'), (None, 0x05u8)),
-            (Character('c'), (None, 0x06u8)),
-            (Character('d'), (None, 0x07u8)),
-            (Character('e'), (None, 0x08u8)),
-            (Character('f'), (None, 0x09u8)),
-            (Character('g'), (None, 0x0au8)),
-            (Character('h'), (None, 0x0bu8)),
-            (Character('i'), (None, 0x0cu8)),
-            (Character('j'), (None, 0x0du8)),
-            (Character('k'), (None, 0x0eu8)),
-            (Character('l'), (None, 0x0fu8)),
-            (Character('m'), (None, 0x10u8)),
-            (Character('n'), (None, 0x11u8)),
-            (Character('o'), (None, 0x12u8)),
-            (Character('p'), (None, 0x13u8)),
-            (Character('q'), (None, 0x14u8)),
-            (Character('r'), (None, 0x15u8)),
-            (Character('s'), (None, 0x16u8)),
-            (Character('t'), (None, 0x17u8)),
-            (Character('u'), (None, 0x18u8)),
-            (Character('v'), (None, 0x19u8)),
-            (Character('w'), (None, 0x1au8)),
-            (Character('x'), (None, 0x1bu8)),
-            (Character('y'), (None, 0x1cu8)),
-            (Character('z'), (None, 0x1du8)),
+            (Character('a'), (NoModifier, 0x04u8)),
+            (Character('b'), (NoModifier, 0x05u8)),
+            (Character('c'), (NoModifier, 0x06u8)),
+            (Character('d'), (NoModifier, 0x07u8)),
+            (Character('e'), (NoModifier, 0x08u8)),
+            (Character('f'), (NoModifier, 0x09u8)),
+            (Character('g'), (NoModifier, 0x0au8)),
+            (Character('h'), (NoModifier, 0x0bu8)),
+            (Character('i'), (NoModifier, 0x0cu8)),
+            (Character('j'), (NoModifier, 0x0du8)),
+            (Character('k'), (NoModifier, 0x0eu8)),
+            (Character('l'), (NoModifier, 0x0fu8)),
+            (Character('m'), (NoModifier, 0x10u8)),
+            (Character('n'), (NoModifier, 0x11u8)),
+            (Character('o'), (NoModifier, 0x12u8)),
+            (Character('p'), (NoModifier, 0x13u8)),
+            (Character('q'), (NoModifier, 0x14u8)),
+            (Character('r'), (NoModifier, 0x15u8)),
+            (Character('s'), (NoModifier, 0x16u8)),
+            (Character('t'), (NoModifier, 0x17u8)),
+            (Character('u'), (NoModifier, 0x18u8)),
+            (Character('v'), (NoModifier, 0x19u8)),
+            (Character('w'), (NoModifier, 0x1au8)),
+            (Character('x'), (NoModifier, 0x1bu8)),
+            (Character('y'), (NoModifier, 0x1cu8)),
+            (Character('z'), (NoModifier, 0x1du8)),
 
             // Uppercase characters
             (Character('A'), (Shift, 0x04u8)),
@@ -107,16 +108,16 @@ impl Converter
             (Character('Z'), (Shift, 0x1du8)),
 
             // Numbers
-            (Character('1'), (None, 0x1eu8)),
-            (Character('2'), (None, 0x1fu8)),
-            (Character('3'), (None, 0x20u8)),
-            (Character('4'), (None, 0x21u8)),
-            (Character('5'), (None, 0x22u8)),
-            (Character('6'), (None, 0x23u8)),
-            (Character('7'), (None, 0x24u8)),
-            (Character('8'), (None, 0x25u8)),
-            (Character('9'), (None, 0x26u8)),
-            (Character('0'), (None, 0x27u8)),
+            (Character('1'), (NoModifier, 0x1eu8)),
+            (Character('2'), (NoModifier, 0x1fu8)),
+            (Character('3'), (NoModifier, 0x20u8)),
+            (Character('4'), (NoModifier, 0x21u8)),
+            (Character('5'), (NoModifier, 0x22u8)),
+            (Character('6'), (NoModifier, 0x23u8)),
+            (Character('7'), (NoModifier, 0x24u8)),
+            (Character('8'), (NoModifier, 0x25u8)),
+            (Character('9'), (NoModifier, 0x26u8)),
+            (Character('0'), (NoModifier, 0x27u8)),
 
             // Symbols
             (Character('!'), (Shift, 0x1eu8)),
@@ -130,147 +131,82 @@ impl Converter
             (Character('('), (Shift, 0x26u8)),
             (Character(')'), (Shift, 0x27u8)),
 
-            (Character('\t'), (None, 0x2bu8)),
-            (Character(' '), (None, 0x2cu8)),
-            (Character('-'), (None, 0x2du8)),
+            (Character('\t'), (NoModifier, 0x2bu8)),
+            (Character(' '), (NoModifier, 0x2cu8)),
+            (Character('-'), (NoModifier, 0x2du8)),
             (Character('_'), (Shift, 0x2du8)),
-            (Character('='), (None, 0x2eu8)),
+            (Character('='), (NoModifier, 0x2eu8)),
             (Character('+'), (Shift, 0x2eu8)),
-            (Character('['), (None, 0x2fu8)),
+            (Character('['), (NoModifier, 0x2fu8)),
             (Character('{'), (Shift, 0x2fu8)),
-            (Character(']'), (None, 0x30u8)),
+            (Character(']'), (NoModifier, 0x30u8)),
             (Character('}'), (Shift, 0x30u8)),
-            (Character('\\'), (None, 0x31u8)),
+            (Character('\\'), (NoModifier, 0x31u8)),
             (Character('|'), (Shift, 0x31u8)),
-            (Character(','), (None, 0x33u8)),
+            (Character(','), (NoModifier, 0x33u8)),
             (Character(':'), (Shift, 0x33u8)),
-            (Character('\''), (None, 0x34u8)),
+            (Character('\''), (NoModifier, 0x34u8)),
             (Character('\"'), (Shift, 0x34u8)),
-            (Character('`'), (None, 0x35u8)),
+            (Character('`'), (NoModifier, 0x35u8)),
             (Character('~'), (Shift, 0x35u8)),
-            (Character(','), (None, 0x36u8)),
+            (Character(','), (NoModifier, 0x36u8)),
             (Character('<'), (Shift, 0x36u8)),
-            (Character('.'), (None, 0x37u8)),
+            (Character('.'), (NoModifier, 0x37u8)),
             (Character('>'), (Shift, 0x37u8)),
-            (Character('/'), (None, 0x38u8)),
+            (Character('/'), (NoModifier, 0x38u8)),
             (Character('?'), (Shift, 0x38u8)),
 
             // The F keys
-            (F(1), (None, 0x3au8)),
-            (F(2), (None, 0x3bu8)),
-            (F(3), (None, 0x3cu8)),
-            (F(4), (None, 0x3du8)),
-            (F(5), (None, 0x3eu8)),
-            (F(6), (None, 0x3fu8)),
-            (F(7), (None, 0x40u8)),
-            (F(8), (None, 0x41u8)),
-            (F(9), (None, 0x42u8)),
-            (F(10), (None, 0x43u8)),
-            (F(11), (None, 0x44u8)),
-            (F(12), (None, 0x45u8)),
+            (F(1), (NoModifier, 0x3au8)),
+            (F(2), (NoModifier, 0x3bu8)),
+            (F(3), (NoModifier, 0x3cu8)),
+            (F(4), (NoModifier, 0x3du8)),
+            (F(5), (NoModifier, 0x3eu8)),
+            (F(6), (NoModifier, 0x3fu8)),
+            (F(7), (NoModifier, 0x40u8)),
+            (F(8), (NoModifier, 0x41u8)),
+            (F(9), (NoModifier, 0x42u8)),
+            (F(10), (NoModifier, 0x43u8)),
+            (F(11), (NoModifier, 0x44u8)),
+            (F(12), (NoModifier, 0x45u8)),
 
-            (Enter, (None, 0x28u8))
+            (Enter, (NoModifier, 0x28u8)),
+            (Backspace, (NoModifier, 0x2Au8))
         ].iter().cloned().collect();
 
-        Converter { map }
+        let input_map = pairs.iter().cloned().map(|(k, c)| (c, k)).collect();
+        let output_map = pairs.iter().cloned().collect();
+        Converter { input_map, output_map }
     }
+
 
     /// Add a new Macro keypress to the converter with the given raw inputs.
     pub fn add_macro(&mut self, modifier: Modifier, raw_key: u8)
     {
-        self.add_type(Keypress::Macro, modifier, raw_key);
+        self.add_type(Key::Macro, modifier, raw_key);
     }
-
-    /// Add a new Character keypress to the converter with the given raw inputs.
-    pub fn add_character(&mut self, ch: char, modifier: Modifier, raw_key: u8)
-    {
-        self.add_type(Keypress::Character(ch), modifier, raw_key);
-    }
-
-    /// Add a new Function keypress to the converter with the given raw inputs.
-    pub fn add_f_key(&mut self, f_number: u8, modifier: Modifier, raw_key: u8)
-    {
-        self.add_type(Keypress::F(f_number), modifier, raw_key);
-    }
-
 
     /// Add a keypress-raw input (Modifier key, u8 keycode) pair into the Converter 
-    fn add_type(&mut self, keypress: Keypress, modifier: Modifier, raw_key: u8)
+    fn add_type(&mut self, keypress: Key, modifier: Modifier, raw_key: u8)
     {
-        self.map.insert(keypress, (modifier, raw_key));
+        self.input_map.insert((modifier, raw_key), keypress);
+        self.output_map.insert(keypress, (modifier, raw_key));
     }
 
-    /// Remove a value from the Converter, after which the raw inputs will return default value.
-    pub fn remove(&mut self, keypress: &Keypress)
+    pub fn get_key(&self, k: &(Modifier, u8)) -> Key
     {
-        self.map.remove(keypress);
+        // Needs to return an owned value for undefined keys
+        self.input_map.get(k).map_or_else(|| Key::Undefined(k.0, k.1), |v| v.to_owned())
     }
 
-
-    /// Remove a value from the Converter by using the value of the key-value pair.
-    pub fn remove_by_value(&mut self, modifier: &Modifier, raw_key: &u8)
-    {   
-        if let Some(pair) = self.map.iter().find(|(_key, raw)| raw.0 == *modifier && raw.1 == *raw_key)
-        {
-            let keypress = pair.0.clone();
-            self.remove(&keypress)
-        }
-    }
-
-    /// Convert a keypress into the corrosponding modifier key, u8 key code combination.
-    ///
-    /// # Examples
-    /// ```
-    /// let converter = Converter::Default(); 
-    ///
-    /// let keypress = Keypress::Character('Z');
-    /// assert_eq!((Modifier::Shift, 0x1du8), converter.convert_keypress(&keypress));
-    /// 
-    /// let keypress = Keypress::Character('💖');
-    /// assert_eq!((Modifier::None, 0x0u8), converter.convert_keypress(&keypress));
-    /// ```
-    pub fn convert_keypress(&self, keypress: &Keypress) -> (Modifier, u8)
+    
+    pub fn get_raw(&self, k: &Key) -> (Modifier, u8)
     {
-        if let Keypress::Undefined(modifier, code) = keypress
+        match k
         {
-            return (*modifier, *code)
+            &Key::Undefined(m, c) => (m, c),
+            _ => self.output_map.get(k).map_or_else(|| (Modifier::NoModifier, 0), |v| v.to_owned())
         }
-        match self.map.get(keypress)
-        {
-            Some(v) => v.clone(),
-            None => (Modifier::None, 0),
-        }
-    }
-
-
-    /// Convert the raw input into their corresponding keypress.
-    ///
-    /// A raw input will comprise a pressed modifier key and a u8 key code of the keys pressed on the keyboard.
-    /// The modifier key is necessary because the keycode 0x04 maps to both 'a' and 'A' depending if the shift (modifier key) is pressed.
-    ///
-    /// On an unknown raw input, this function will return a Keypress::Undefined(Modifier_key, Keycode) that holds the given inputs.
-    ///
-    /// # Example
-    /// ```
-    /// let converter = Converter::default();
-    /// let modifier_key = Modifier::None;
-    /// let raw_key_code_a = 0x04u8;
-    /// assert_eq!(Keypress::Character('a'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
-    ///
-    /// let modifier_key = Modifier::Shift;
-    /// assert_eq!(Keypress::Character('A'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
-    ///
-    /// let modifier_key = Modifier::None;
-    /// let raw_key_code_a = 0x01u8;
-    /// assert_eq!(Keypress::Undefined(Modifier::None, 1), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
-    /// ```
-    pub fn convert_rawinput(&self, modifier: &Modifier, raw_key: &u8) -> Keypress
-    {
-        if let Some(element) = self.map.iter().find(|(_key, raw)| raw.0 == *modifier && raw.1 == *raw_key)
-        {
-            return *element.0 // 0 is the Keypress part of the element key-value pair
-        }
-        Keypress::Undefined(*modifier, *raw_key)
     }
 }
 
@@ -281,7 +217,7 @@ impl Converter
 pub enum Modifier
 {
     /// No modifier key is pressed
-    None = 0,
+    NoModifier = 0,
     /// Control modifier key is pressed
     Ctrl = 1,
     /// Shift modifier key is pressed
@@ -324,7 +260,7 @@ impl From<u8> for Modifier
         // Here we combine them into one Modifier.
         match (num >> 4) | (num & 15)
         {
-            0 => Modifier::None,
+            0 => Modifier::NoModifier,
             1 => Modifier::Ctrl,
             2 => Modifier::Shift,
             3 => Modifier::CtrlShift,
@@ -340,7 +276,7 @@ impl From<u8> for Modifier
             13 => Modifier::CtrlAltGui,
             14 => Modifier::ShiftAltGui,
             15 => Modifier::CtrlShiftAltGui,
-            _ => Modifier::None,
+            _ => Modifier::NoModifier,
         }
     }
 }
@@ -350,7 +286,7 @@ impl From<u8> for Modifier
 /// Type Keypress represents the different type of inputs from the keyboard
 #[non_exhaustive]
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub enum Keypress
+pub enum Key
 {
     /// Any of the number, symbols or alphabetical keys
     Character(char),
@@ -360,6 +296,8 @@ pub enum Keypress
     F(u8),       
     // A combination of a modifier key and regular input defined by user
     Macro, 
+    // The backspace key
+    Backspace,
     // A key or combination of keys that do not fall in the other Keypress values
     Undefined(Modifier, u8),
 }
@@ -374,17 +312,17 @@ mod tests
     {
         let converter = Converter::new();
 
-        assert!(converter.map.is_empty());
+        assert!(converter.input_map.is_empty());
 
-        let keypress = Keypress::Character('a');
+        let keypress = Key::Character('a');
 
-        assert_eq!((Modifier::None, 0x0u8), converter.convert_keypress(&keypress));
+        assert_eq!((Modifier::NoModifier, 0x0u8), converter.convert_keypress(&keypress));
 
         let modifier = Modifier::Ctrl;
 
         let raw_key_code = 0x04u8; // The a key as defined by the HID USB usages and descriptions
 
-        assert_eq!(Keypress::Undefined(Modifier::Ctrl, 0x04u8), converter.convert_rawinput(&modifier, &raw_key_code));
+        assert_eq!(Key::Undefined(Modifier::Ctrl, 0x04u8), converter.convert_rawinput(&modifier, &raw_key_code));
     }
     
     #[test]
@@ -392,7 +330,7 @@ mod tests
     {
         let mut converter = Converter::new();
 
-        assert!(!converter.map.contains_key(&Keypress::Macro));
+        assert!(!converter.input_map.contains_key(&Key::Macro));
 
         let modifier = Modifier::Ctrl;
 
@@ -400,7 +338,7 @@ mod tests
 
         converter.add_macro(modifier, raw_key_code);
 
-        assert!(converter.map.contains_key(&Keypress::Macro));
+        assert!(converter.input_map.contains_key(&Key::Macro));
     }
 
     #[test]
@@ -408,15 +346,15 @@ mod tests
     {
         let mut converter = Converter::new();
 
-        assert!(!converter.map.contains_key(&Keypress::Character('a')));
+        assert!(!converter.input_map.contains_key(&Key::Character('a')));
 
-        let modifier = Modifier::None;
+        let modifier = Modifier::NoModifier;
 
         let raw_key_code = 0x04u8;
 
         converter.add_character('a', modifier, raw_key_code);
 
-        assert!(converter.map.contains_key(&Keypress::Character('a')));
+        assert!(converter.input_map.contains_key(&Key::Character('a')));
     }
 
     #[test]
@@ -424,14 +362,14 @@ mod tests
     {
         let converter = Converter::default();
 
-        let keypress = Keypress::Character('a');
+        let keypress = Key::Character('a');
 
-        assert_eq!((Modifier::None, 0x04u8), converter.convert_keypress(&keypress));
+        assert_eq!((Modifier::NoModifier, 0x04u8), converter.convert_keypress(&keypress));
 
         // unknown characters should return 0
-        let keypress = Keypress::Character('b');
+        let keypress = Key::Character('b');
 
-        assert_eq!((Modifier::None, 0x05u8), converter.convert_keypress(&keypress));
+        assert_eq!((Modifier::NoModifier, 0x05u8), converter.convert_keypress(&keypress));
     }
 
     #[test]
@@ -439,12 +377,12 @@ mod tests
     {
         let converter = Converter::default();
 
-        let keypress = Keypress::Character('A');
+        let keypress = Key::Character('A');
 
         assert_eq!((Modifier::Shift, 0x04u8), converter.convert_keypress(&keypress));
 
         // unknown characters should return 0
-        let keypress = Keypress::Character('B');
+        let keypress = Key::Character('B');
 
         assert_eq!((Modifier::Shift, 0x05u8), converter.convert_keypress(&keypress));
     }
@@ -455,23 +393,23 @@ mod tests
         let converter = Converter::default();
 
         // unknown characters should return 0
-        let keypress = Keypress::Character('💖');
+        let keypress = Key::Character('💖');
 
-        assert_eq!((Modifier::None, 0u8), converter.convert_keypress(&keypress));
+        assert_eq!((Modifier::NoModifier, 0u8), converter.convert_keypress(&keypress));
     }
 
     #[test]
     fn test_convert_rawinput_lowercase_character()
     {
         let converter = Converter::default();
-        let modifier_key = Modifier::None;
+        let modifier_key = Modifier::NoModifier;
         let raw_key_code_a = 0x04u8; // The a key on a qwerty keyboard
 
-        assert_eq!(Keypress::Character('a'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
+        assert_eq!(Key::Character('a'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
 
         let raw_key_code_b = 0x05u8;
         
-        assert_eq!(Keypress::Character('b'), converter.convert_rawinput(&modifier_key, &raw_key_code_b));
+        assert_eq!(Key::Character('b'), converter.convert_rawinput(&modifier_key, &raw_key_code_b));
     }
 
     #[test]
@@ -481,25 +419,25 @@ mod tests
         let modifier_key = Modifier::Shift;
         let raw_key_code_a = 0x04u8; // The a key on a qwerty keyboard
 
-        assert_eq!(Keypress::Character('A'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
+        assert_eq!(Key::Character('A'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
 
         let raw_key_code_b = 0x05u8;
         
-        assert_eq!(Keypress::Character('B'), converter.convert_rawinput(&modifier_key, &raw_key_code_b));
+        assert_eq!(Key::Character('B'), converter.convert_rawinput(&modifier_key, &raw_key_code_b));
     }
 
     #[test]
     fn test_convert_rawinput_unknown_character()
     {
         let converter = Converter::default();
-        let modifier_key = Modifier::None;
+        let modifier_key = Modifier::NoModifier;
         let raw_key_code = 0x01u8;
 
-        assert_eq!(Keypress::Undefined(Modifier::None, 0x01u8), converter.convert_rawinput(&modifier_key, &raw_key_code));
+        assert_eq!(Key::Undefined(Modifier::NoModifier, 0x01u8), converter.convert_rawinput(&modifier_key, &raw_key_code));
 
         let modifier_key = Modifier::Ctrl;
         let raw_key_code = 0;
 
-        assert_eq!(Keypress::Undefined(Modifier::Ctrl, 0), converter.convert_rawinput(&modifier_key, &raw_key_code));
+        assert_eq!(Key::Undefined(Modifier::Ctrl, 0), converter.convert_rawinput(&modifier_key, &raw_key_code));
     }
 }

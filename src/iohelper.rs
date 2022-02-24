@@ -1,6 +1,7 @@
 use std::collections::VecDeque;
 use std::io::{BufRead, Write};
-use fobword_core::converter::{Converter, Keypress};
+use SSD1306_Terminal::window::Window;
+use fobword_core::converter::{Converter, Key};
 
 use crate::converterutilities;
 
@@ -16,7 +17,7 @@ pub struct IOhelper
     
     pub buffer: [u8; 8],
 
-    pub queue: VecDeque<Keypress>,
+    pub queue: VecDeque<Key>,
 }
 
 impl IOhelper
@@ -24,14 +25,14 @@ impl IOhelper
     /// Create a new helper from stuff
     pub(crate) fn new(reader: Box<dyn BufRead>, writer: Box<dyn Write>) -> IOhelper
     {
-        let buffer = [0u8;8];
+        let buffer = [0u8; 8];
         let queue = VecDeque::new();
         IOhelper { reader, writer, buffer , queue}
     }
 
-    pub fn write_key(&mut self, key: &Keypress, conv: &Converter) -> std::io::Result<()>
+    pub fn write_key(&mut self, key: &Key, conv: &Converter) -> std::io::Result<()>
     {
-        let (modifier, keycode) = conv.convert_keypress(&key);
+        let (modifier, keycode) = conv.get_raw(&key);
         let buffer = [modifier as u8, 0, keycode, 0 ,0 ,0 ,0 ,0];
         self.write_to_file(&buffer)?;
         // Send an empty buffer to indicate key release
@@ -57,7 +58,7 @@ impl IOhelper
     }
 
 
-    pub fn next_key(&mut self, conv: &Converter) -> std::io::Result<Keypress>
+    pub fn next_key(&mut self, conv: &Converter) -> std::io::Result<Key>
     {
         let mut key = self.queue.pop_front();
         while let None = key
@@ -76,7 +77,7 @@ impl IOhelper
         Ok(())
     }
 
-    pub fn read_line(&mut self, conv: &Converter) -> std::io::Result<String>
+    pub fn read_line(&mut self, conv: &Converter, screen: &mut Window) -> std::io::Result<String>
     {
         let mut result_string = String::new();
 
@@ -85,11 +86,16 @@ impl IOhelper
             let key = self.next_key(&conv)?;
             match key
             {
-                Keypress::Character(character) => result_string.push(character),
-                Keypress::Enter => return Ok(result_string),
-                Keypress::Macro => return Ok(result_string),
+                Key::Character(character) => { screen.add_char(character); result_string.push(character) } ,
+                Key::Enter | Key::Macro => { screen.print_write_buffer(); return Ok(result_string) },
+                Key::Backspace => { screen.remove_char(); result_string.pop(); },
                 _ => continue,
             }
         }
     }
 }
+
+// write -> Char
+// write_vec -> Vec<Char>
+// write_string -> String
+// write_key_press -> Keypress
