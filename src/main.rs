@@ -5,6 +5,7 @@ mod iohelper;
 use app::{App, AppSettings};
 use iohelper::IOhelper;
 
+use std::env::current_dir;
 use std::fs::{File, OpenOptions};
 use std::io::Read;
 
@@ -38,8 +39,12 @@ fn existing_config(file: &mut File) -> Result<App, DataHandleError>
 
 fn default_config() -> Result<App, DataHandleError>
 {
-    let default_settings = AppSettings { input: "/dev/hidraw0".to_owned(), output: "/dev/hidg0".to_owned(), macro_key: vec![0x02, 0, 0x3au8, 0, 0, 0, 0, 0,]};
-    let default_password = "please123";
+    let default_settings = 
+        AppSettings { 
+            input: "/dev/hidraw2".to_owned(), 
+            output: "/dev/hidg0".to_owned(),
+            macro_key: vec![0x02, 0, 0x3au8, 0, 0, 0, 0, 0,]};
+    let default_password = "password";
     let mut locked_data = LockedData::new(default_password)?;
     let mut data = locked_data.unlock(default_password)?;
     data.insert(String::from("test"), DataInformation::new(None, None, String::from("some_password")));
