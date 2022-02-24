@@ -199,12 +199,23 @@ impl Converter
         self.input_map.get(k).map_or_else(|| Key::Undefined(k.0, k.1), |v| v.to_owned())
     }
 
-    
     pub fn get_raw(&self, k: &Key) -> (Modifier, u8)
     {
         match k
         {
-            &Key::Undefined(m, c) => (m, c),
+            // If they key didn't exist in the input map, check if it exist without a modifier attached
+            &Key::Undefined(m, c) =>
+            {
+                // Try to find the key as if it had no modifier
+                let no_mod_key = self.input_map.get(&(Modifier::NoModifier, c));
+                match no_mod_key
+                {
+                    // If they key without modifier exists, get the converted code, and add the original modifier
+                    Some(k) => self.output_map.get(k).map_or_else(|| (Modifier::NoModifier, 0), |v| (m, v.1).to_owned()),
+                    // If it still can't be found return the raw codes and it will default to your computers mapping
+                    None => (m, c),
+                }
+            },
             _ => self.output_map.get(k).map_or_else(|| (Modifier::NoModifier, 0), |v| v.to_owned())
         }
     }
