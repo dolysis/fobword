@@ -1,3 +1,5 @@
+use std::sync::mpsc::RecvError;
+
 /// Convience Error type to handle the different errors from exterior crates
 #[derive(Debug)]
 pub enum DataHandleError
@@ -22,6 +24,17 @@ pub enum DataHandleError
 
     // Error for when trying to access locked data that holds message for debug
     LockedData(String),
+
+    // Channel recvier error
+    RecvError(std::sync::mpsc::RecvError)
+}
+
+impl From<std::sync::mpsc::RecvError> for DataHandleError
+{
+    fn from(err: std::sync::mpsc::RecvError) -> DataHandleError
+    {
+        DataHandleError::RecvError(err)
+    }
 }
 
 impl From<std::string::FromUtf8Error> for DataHandleError

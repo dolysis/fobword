@@ -47,114 +47,114 @@ impl Converter
     /// ```
     pub fn default() -> Converter
     {
-        use Key::{ Character, Enter, F, Backspace };
+        use Key::{ Char, Enter, F, Backspace };
         use Modifier::{ NoModifier, Shift };
         let pairs: Vec<(Key, (Modifier, u8))> = 
         [
             // Lowercase characters
-            (Character('a'), (NoModifier, 0x04u8)),
-            (Character('b'), (NoModifier, 0x05u8)),
-            (Character('c'), (NoModifier, 0x06u8)),
-            (Character('d'), (NoModifier, 0x07u8)),
-            (Character('e'), (NoModifier, 0x08u8)),
-            (Character('f'), (NoModifier, 0x09u8)),
-            (Character('g'), (NoModifier, 0x0au8)),
-            (Character('h'), (NoModifier, 0x0bu8)),
-            (Character('i'), (NoModifier, 0x0cu8)),
-            (Character('j'), (NoModifier, 0x0du8)),
-            (Character('k'), (NoModifier, 0x0eu8)),
-            (Character('l'), (NoModifier, 0x0fu8)),
-            (Character('m'), (NoModifier, 0x10u8)),
-            (Character('n'), (NoModifier, 0x11u8)),
-            (Character('o'), (NoModifier, 0x12u8)),
-            (Character('p'), (NoModifier, 0x13u8)),
-            (Character('q'), (NoModifier, 0x14u8)),
-            (Character('r'), (NoModifier, 0x15u8)),
-            (Character('s'), (NoModifier, 0x16u8)),
-            (Character('t'), (NoModifier, 0x17u8)),
-            (Character('u'), (NoModifier, 0x18u8)),
-            (Character('v'), (NoModifier, 0x19u8)),
-            (Character('w'), (NoModifier, 0x1au8)),
-            (Character('x'), (NoModifier, 0x1bu8)),
-            (Character('y'), (NoModifier, 0x1cu8)),
-            (Character('z'), (NoModifier, 0x1du8)),
+            (Char('a'), (NoModifier, 0x04u8)),
+            (Char('b'), (NoModifier, 0x05u8)),
+            (Char('c'), (NoModifier, 0x06u8)),
+            (Char('d'), (NoModifier, 0x07u8)),
+            (Char('e'), (NoModifier, 0x08u8)),
+            (Char('f'), (NoModifier, 0x09u8)),
+            (Char('g'), (NoModifier, 0x0au8)),
+            (Char('h'), (NoModifier, 0x0bu8)),
+            (Char('i'), (NoModifier, 0x0cu8)),
+            (Char('j'), (NoModifier, 0x0du8)),
+            (Char('k'), (NoModifier, 0x0eu8)),
+            (Char('l'), (NoModifier, 0x0fu8)),
+            (Char('m'), (NoModifier, 0x10u8)),
+            (Char('n'), (NoModifier, 0x11u8)),
+            (Char('o'), (NoModifier, 0x12u8)),
+            (Char('p'), (NoModifier, 0x13u8)),
+            (Char('q'), (NoModifier, 0x14u8)),
+            (Char('r'), (NoModifier, 0x15u8)),
+            (Char('s'), (NoModifier, 0x16u8)),
+            (Char('t'), (NoModifier, 0x17u8)),
+            (Char('u'), (NoModifier, 0x18u8)),
+            (Char('v'), (NoModifier, 0x19u8)),
+            (Char('w'), (NoModifier, 0x1au8)),
+            (Char('x'), (NoModifier, 0x1bu8)),
+            (Char('y'), (NoModifier, 0x1cu8)),
+            (Char('z'), (NoModifier, 0x1du8)),
 
             // Uppercase characters
-            (Character('A'), (Shift, 0x04u8)),
-            (Character('B'), (Shift, 0x05u8)),
-            (Character('C'), (Shift, 0x06u8)),
-            (Character('D'), (Shift, 0x07u8)),
-            (Character('E'), (Shift, 0x08u8)),
-            (Character('F'), (Shift, 0x09u8)),
-            (Character('G'), (Shift, 0x0au8)),
-            (Character('H'), (Shift, 0x0bu8)),
-            (Character('I'), (Shift, 0x0cu8)),
-            (Character('J'), (Shift, 0x0du8)),
-            (Character('K'), (Shift, 0x0eu8)),
-            (Character('L'), (Shift, 0x0fu8)),
-            (Character('M'), (Shift, 0x10u8)),
-            (Character('N'), (Shift, 0x11u8)),
-            (Character('O'), (Shift, 0x12u8)),
-            (Character('P'), (Shift, 0x13u8)),
-            (Character('Q'), (Shift, 0x14u8)),
-            (Character('R'), (Shift, 0x15u8)),
-            (Character('S'), (Shift, 0x16u8)),
-            (Character('T'), (Shift, 0x17u8)),
-            (Character('U'), (Shift, 0x18u8)),
-            (Character('V'), (Shift, 0x19u8)),
-            (Character('W'), (Shift, 0x1au8)),
-            (Character('X'), (Shift, 0x1bu8)),
-            (Character('Y'), (Shift, 0x1cu8)),
-            (Character('Z'), (Shift, 0x1du8)),
+            (Char('A'), (Shift, 0x04u8)),
+            (Char('B'), (Shift, 0x05u8)),
+            (Char('C'), (Shift, 0x06u8)),
+            (Char('D'), (Shift, 0x07u8)),
+            (Char('E'), (Shift, 0x08u8)),
+            (Char('F'), (Shift, 0x09u8)),
+            (Char('G'), (Shift, 0x0au8)),
+            (Char('H'), (Shift, 0x0bu8)),
+            (Char('I'), (Shift, 0x0cu8)),
+            (Char('J'), (Shift, 0x0du8)),
+            (Char('K'), (Shift, 0x0eu8)),
+            (Char('L'), (Shift, 0x0fu8)),
+            (Char('M'), (Shift, 0x10u8)),
+            (Char('N'), (Shift, 0x11u8)),
+            (Char('O'), (Shift, 0x12u8)),
+            (Char('P'), (Shift, 0x13u8)),
+            (Char('Q'), (Shift, 0x14u8)),
+            (Char('R'), (Shift, 0x15u8)),
+            (Char('S'), (Shift, 0x16u8)),
+            (Char('T'), (Shift, 0x17u8)),
+            (Char('U'), (Shift, 0x18u8)),
+            (Char('V'), (Shift, 0x19u8)),
+            (Char('W'), (Shift, 0x1au8)),
+            (Char('X'), (Shift, 0x1bu8)),
+            (Char('Y'), (Shift, 0x1cu8)),
+            (Char('Z'), (Shift, 0x1du8)),
 
             // Numbers
-            (Character('1'), (NoModifier, 0x1eu8)),
-            (Character('2'), (NoModifier, 0x1fu8)),
-            (Character('3'), (NoModifier, 0x20u8)),
-            (Character('4'), (NoModifier, 0x21u8)),
-            (Character('5'), (NoModifier, 0x22u8)),
-            (Character('6'), (NoModifier, 0x23u8)),
-            (Character('7'), (NoModifier, 0x24u8)),
-            (Character('8'), (NoModifier, 0x25u8)),
-            (Character('9'), (NoModifier, 0x26u8)),
-            (Character('0'), (NoModifier, 0x27u8)),
+            (Char('1'), (NoModifier, 0x1eu8)),
+            (Char('2'), (NoModifier, 0x1fu8)),
+            (Char('3'), (NoModifier, 0x20u8)),
+            (Char('4'), (NoModifier, 0x21u8)),
+            (Char('5'), (NoModifier, 0x22u8)),
+            (Char('6'), (NoModifier, 0x23u8)),
+            (Char('7'), (NoModifier, 0x24u8)),
+            (Char('8'), (NoModifier, 0x25u8)),
+            (Char('9'), (NoModifier, 0x26u8)),
+            (Char('0'), (NoModifier, 0x27u8)),
 
             // Symbols
-            (Character('!'), (Shift, 0x1eu8)),
-            (Character('@'), (Shift, 0x1fu8)),
-            (Character('#'), (Shift, 0x20u8)),
-            (Character('$'), (Shift, 0x21u8)),
-            (Character('%'), (Shift, 0x22u8)),
-            (Character('^'), (Shift, 0x23u8)),
-            (Character('&'), (Shift, 0x24u8)),
-            (Character('*'), (Shift, 0x25u8)),
-            (Character('('), (Shift, 0x26u8)),
-            (Character(')'), (Shift, 0x27u8)),
+            (Char('!'), (Shift, 0x1eu8)),
+            (Char('@'), (Shift, 0x1fu8)),
+            (Char('#'), (Shift, 0x20u8)),
+            (Char('$'), (Shift, 0x21u8)),
+            (Char('%'), (Shift, 0x22u8)),
+            (Char('^'), (Shift, 0x23u8)),
+            (Char('&'), (Shift, 0x24u8)),
+            (Char('*'), (Shift, 0x25u8)),
+            (Char('('), (Shift, 0x26u8)),
+            (Char(')'), (Shift, 0x27u8)),
 
-            (Character('\t'), (NoModifier, 0x2bu8)),
-            (Character(' '), (NoModifier, 0x2cu8)),
-            (Character('-'), (NoModifier, 0x2du8)),
-            (Character('_'), (Shift, 0x2du8)),
-            (Character('='), (NoModifier, 0x2eu8)),
-            (Character('+'), (Shift, 0x2eu8)),
-            (Character('['), (NoModifier, 0x2fu8)),
-            (Character('{'), (Shift, 0x2fu8)),
-            (Character(']'), (NoModifier, 0x30u8)),
-            (Character('}'), (Shift, 0x30u8)),
-            (Character('\\'), (NoModifier, 0x31u8)),
-            (Character('|'), (Shift, 0x31u8)),
-            (Character(','), (NoModifier, 0x33u8)),
-            (Character(':'), (Shift, 0x33u8)),
-            (Character('\''), (NoModifier, 0x34u8)),
-            (Character('\"'), (Shift, 0x34u8)),
-            (Character('`'), (NoModifier, 0x35u8)),
-            (Character('~'), (Shift, 0x35u8)),
-            (Character(','), (NoModifier, 0x36u8)),
-            (Character('<'), (Shift, 0x36u8)),
-            (Character('.'), (NoModifier, 0x37u8)),
-            (Character('>'), (Shift, 0x37u8)),
-            (Character('/'), (NoModifier, 0x38u8)),
-            (Character('?'), (Shift, 0x38u8)),
+            (Char('\t'), (NoModifier, 0x2bu8)),
+            (Char(' '), (NoModifier, 0x2cu8)),
+            (Char('-'), (NoModifier, 0x2du8)),
+            (Char('_'), (Shift, 0x2du8)),
+            (Char('='), (NoModifier, 0x2eu8)),
+            (Char('+'), (Shift, 0x2eu8)),
+            (Char('['), (NoModifier, 0x2fu8)),
+            (Char('{'), (Shift, 0x2fu8)),
+            (Char(']'), (NoModifier, 0x30u8)),
+            (Char('}'), (Shift, 0x30u8)),
+            (Char('\\'), (NoModifier, 0x31u8)),
+            (Char('|'), (Shift, 0x31u8)),
+            (Char(','), (NoModifier, 0x33u8)),
+            (Char(':'), (Shift, 0x33u8)),
+            (Char('\''), (NoModifier, 0x34u8)),
+            (Char('\"'), (Shift, 0x34u8)),
+            (Char('`'), (NoModifier, 0x35u8)),
+            (Char('~'), (Shift, 0x35u8)),
+            (Char(','), (NoModifier, 0x36u8)),
+            (Char('<'), (Shift, 0x36u8)),
+            (Char('.'), (NoModifier, 0x37u8)),
+            (Char('>'), (Shift, 0x37u8)),
+            (Char('/'), (NoModifier, 0x38u8)),
+            (Char('?'), (Shift, 0x38u8)),
 
             // The F keys
             (F(1), (NoModifier, 0x3au8)),
@@ -300,7 +300,7 @@ impl From<u8> for Modifier
 pub enum Key
 {
     /// Any of the number, symbols or alphabetical keys
-    Character(char),
+    Char(char),
     // The enter key
     Enter,
     // The F keys
@@ -325,7 +325,7 @@ mod tests
 
         assert!(converter.input_map.is_empty());
 
-        let keypress = Key::Character('a');
+        let keypress = Key::Char('a');
 
         assert_eq!((Modifier::NoModifier, 0x0u8), converter.convert_keypress(&keypress));
 
@@ -357,7 +357,7 @@ mod tests
     {
         let mut converter = Converter::new();
 
-        assert!(!converter.input_map.contains_key(&Key::Character('a')));
+        assert!(!converter.input_map.contains_key(&Key::Char('a')));
 
         let modifier = Modifier::NoModifier;
 
@@ -365,7 +365,7 @@ mod tests
 
         converter.add_character('a', modifier, raw_key_code);
 
-        assert!(converter.input_map.contains_key(&Key::Character('a')));
+        assert!(converter.input_map.contains_key(&Key::Char('a')));
     }
 
     #[test]
@@ -373,12 +373,12 @@ mod tests
     {
         let converter = Converter::default();
 
-        let keypress = Key::Character('a');
+        let keypress = Key::Char('a');
 
         assert_eq!((Modifier::NoModifier, 0x04u8), converter.convert_keypress(&keypress));
 
         // unknown characters should return 0
-        let keypress = Key::Character('b');
+        let keypress = Key::Char('b');
 
         assert_eq!((Modifier::NoModifier, 0x05u8), converter.convert_keypress(&keypress));
     }
@@ -388,12 +388,12 @@ mod tests
     {
         let converter = Converter::default();
 
-        let keypress = Key::Character('A');
+        let keypress = Key::Char('A');
 
         assert_eq!((Modifier::Shift, 0x04u8), converter.convert_keypress(&keypress));
 
         // unknown characters should return 0
-        let keypress = Key::Character('B');
+        let keypress = Key::Char('B');
 
         assert_eq!((Modifier::Shift, 0x05u8), converter.convert_keypress(&keypress));
     }
@@ -404,7 +404,7 @@ mod tests
         let converter = Converter::default();
 
         // unknown characters should return 0
-        let keypress = Key::Character('💖');
+        let keypress = Key::Char('💖');
 
         assert_eq!((Modifier::NoModifier, 0u8), converter.convert_keypress(&keypress));
     }
@@ -416,11 +416,11 @@ mod tests
         let modifier_key = Modifier::NoModifier;
         let raw_key_code_a = 0x04u8; // The a key on a qwerty keyboard
 
-        assert_eq!(Key::Character('a'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
+        assert_eq!(Key::Char('a'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
 
         let raw_key_code_b = 0x05u8;
         
-        assert_eq!(Key::Character('b'), converter.convert_rawinput(&modifier_key, &raw_key_code_b));
+        assert_eq!(Key::Char('b'), converter.convert_rawinput(&modifier_key, &raw_key_code_b));
     }
 
     #[test]
@@ -430,11 +430,11 @@ mod tests
         let modifier_key = Modifier::Shift;
         let raw_key_code_a = 0x04u8; // The a key on a qwerty keyboard
 
-        assert_eq!(Key::Character('A'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
+        assert_eq!(Key::Char('A'), converter.convert_rawinput(&modifier_key, &raw_key_code_a));
 
         let raw_key_code_b = 0x05u8;
         
-        assert_eq!(Key::Character('B'), converter.convert_rawinput(&modifier_key, &raw_key_code_b));
+        assert_eq!(Key::Char('B'), converter.convert_rawinput(&modifier_key, &raw_key_code_b));
     }
 
     #[test]

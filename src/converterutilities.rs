@@ -33,7 +33,7 @@ pub fn string_to_report_buffers(conv: &Converter, word: &str) -> Option<Vec<Vec<
     let mut chars = word.chars();
     if let Some(c) = chars.next()
     {   
-        let (char_shift_code, char_code) = conv.get_raw(&Key::Character(c));
+        let (char_shift_code, char_code) = conv.get_raw(&Key::Char(c));
         write_first_char_to_buffer(&mut index, &mut in_process_buffer, char_code, char_shift_code);
     }
     else
@@ -43,7 +43,7 @@ pub fn string_to_report_buffers(conv: &Converter, word: &str) -> Option<Vec<Vec<
     
     for c in chars
     {
-        let (char_shift_code, char_code) = conv.get_raw(&Key::Character(c));
+        let (char_shift_code, char_code) = conv.get_raw(&Key::Char(c));
         if in_process_buffer.contains(&char_code)
         {
             completed_report_buffers.push(in_process_buffer);
@@ -87,19 +87,4 @@ fn write_to_buffer<'a>(index: &mut usize, buffer: &mut Vec<u8>, char_code: u8)
 {
     buffer[*index + 2] = char_code;
     *index += 1;
-}
-
-
-/// Convert a raw input report into Keypress values and add them to the queue.
-///
-/// 
-pub fn report_to_keypress(conv: &Converter, queue: &mut VecDeque<Key>, report: &[u8], old_report: &[u8])
-{
-    let modifier = Modifier::from(report[0]);
-    let s = &old_report[2..];
-    // Filter the keys if they appear twice in a report in a row
-    for raw_key in report.iter().skip(2).filter(|x| !s.contains(x))
-    {
-        queue.push_back(conv.get_key(&(modifier, *raw_key)));
-    }
 }
