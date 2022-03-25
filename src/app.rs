@@ -1,7 +1,8 @@
-use fobword_core::config::{Config, Data, LockedData};
+use fobword_core::config::{Config, Data, LockedData, SymbolLevel};
 use fobword_core::converter::{Converter, Key, Modifier};
 use fobword_core::error::DataHandleError;
 use serde::{Deserialize, Serialize};
+use std::convert::TryInto;
 use std::fs::OpenOptions;
 use std::io::{BufRead, BufReader, Write};
 use SSD1306_Terminal::window::Window;
@@ -16,16 +17,17 @@ pub struct App {
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AppSettings {
-    pub input: String,
     pub output: String,
     pub macro_key: Vec<u8>,
+    pub output_location: String,
+    pub input_location: String,
 }
 
 impl App {
     pub fn new(settings: AppSettings, data: LockedData) -> Result<App, DataHandleError> {
         let data = data;
         let settings = settings;
-        let mut converter = Converter::default();
+        let mut converter = Converter::from_paths(&settings.input_location, &settings.output_location)?;
         converter.add_macro(Modifier::from(settings.macro_key[0]), settings.macro_key[2]);
         let window = Window::new("/dev/i2c-0", 0x3c)?;
         let iohelper = IOhelper::new(&settings.output, converter, window)?;
@@ -63,7 +65,7 @@ impl App {
                     "save" => self.action_save_data(&mut data)?,
                     "exit" => break 'outer,
                     "change" => self.action_change_password()?,
-                    "macro" => self.action_change_macro()?,
+                    "gen" | "generate" => self.action_generate_password(&mut data)?,
                     _ => self.action_use_macro(&data, &command)?,
                 }
 
@@ -76,12 +78,11 @@ impl App {
         Ok(())
     }
 
-    fn action_change_macro(&mut self) -> Result<(), DataHandleError> {
-        // let key = self.iohelper.next_key()?;
-        // let raw_key = self.converter.get_raw(&key);
-        // self.converter.add_macro(raw_key.0, raw_key.1);
-        // self.settings.macro_key = vec![raw_key.0 as u8, 0, raw_key.1, 0, 0, 0, 0, 0];
-        Ok(())
+    fn action_generate_password(&mut self, data: &mut Data) -> Result<(), DataHandleError> 
+    {
+        self.iohelper.println("Enter macro name:")?;
+        let name = self.iohelper.read_line()?;
+        data.generate(name, None, 15, SymbolLevel::Symbols)
     }
 
     fn action_change_password(&mut self) -> Result<(), DataHandleError> {
@@ -119,13 +120,17 @@ impl App {
         Ok(())
     }
 
-    fn action_save_data(&mut self, data: &mut Data) -> Result<(), DataHandleError> {
+    fn action_save_data(&mut self, data: &mut Data) -> Result<(), DataHandleError> 
+    {
+        if std::path::Path::new("/usr/bin/config.yaml").exists()
+        {
+            std::fs::copy("/usr/bin/config.yaml", "/usr/bin/back-up-config.yaml")?;
+        }
         let mut file = OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
-            .open("/home/pi/config.yaml")?;
-        std::fs::copy("/home/pi/config.yaml", "/home/pi/back-up-config.yaml")?;
+            .open("/usr/bin/config.yaml")?;
         let password = self.iohelper.read_line()?;
         self.data.lock(&password, data.clone())?;
         let config = Config::new(Some(self.settings.clone()), Some(self.data.clone()));

@@ -63,7 +63,12 @@ impl IOhelper
         let output_file = OpenOptions::new().write(true).open(gadget_path)?;
         let modifier_state = 0u8;
         let keys_held = Vec::new();
-        Ok(IOhelper { output_file, receiver, modifier_state, keys_held, converter, window})
+        Ok(IOhelper { output_file, receiver, modifier_state, keys_held, converter, window })
+    }
+
+    pub fn println(&mut self, message: &str) -> Result<usize, DataHandleError>
+    {
+        self.window.print_to_buffer(message)
     }
 
     pub fn wait_for(&mut self, key: Key) -> Result<(), DataHandleError>
@@ -74,6 +79,7 @@ impl IOhelper
             {
                 if key == self.converter.get_key(&(Modifier::from(self.modifier_state), k))
                 {
+                    self.write_key(&Key::Undefined(Modifier::NoModifier, 0))?;
                     break;
                 }
             }

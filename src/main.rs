@@ -14,7 +14,7 @@ use fobword_core::error::DataHandleError;
 
 fn main() -> Result<(), DataHandleError>
 {
-    let mut app = match OpenOptions::new().read(true).open("/home/pi/config.yaml")
+    let mut app = match OpenOptions::new().read(true).open("/usr/bin/config.yaml")
     {
         Ok(mut file) => existing_config(&mut file)?,
         Err(e) => {
@@ -41,9 +41,12 @@ fn default_config() -> Result<App, DataHandleError>
 {
     let default_settings = 
         AppSettings { 
-            input: "/dev/hidraw2".to_owned(), 
             output: "/dev/hidg0".to_owned(),
-            macro_key: vec![0x02, 0, 0x3au8, 0, 0, 0, 0, 0,]};
+            macro_key: vec![0x02, 0, 0x3au8, 0, 0, 0, 0, 0,],
+            input_location: "/usr/bin/qwerty-layout.txt".to_owned(),
+            output_location: "/usr/bin/qwerty-layout.txt".to_owned(),
+        };
+
     let default_password = "password";
     let mut locked_data = LockedData::new(default_password)?;
     let mut data = locked_data.unlock(default_password)?;

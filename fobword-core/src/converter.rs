@@ -1,4 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fs::OpenOptions, io::Read};
+use std::io::{Error, ErrorKind};
+use serde::{ Serialize, Deserialize };
 /// A struct that holds a map which can be used to convert between raw keyboard codes and Keypress enum variants.
 ///
 /// # Example
@@ -37,6 +39,21 @@ impl Converter
         Converter { input_map, output_map }
     }
 
+    pub fn from_paths(input: &str, output: &str) -> Result<Converter, Error>
+    {
+        let mut input_string = String::new();
+        let mut input_file = OpenOptions::new().read(true).open(input)?;
+        input_file.read_to_string(&mut input_string)?;
+        let input_vector: Vec<(Key, (Modifier, u8))> = ron::from_str(&input_string).map_err(|e| Error::new(ErrorKind::InvalidData, e))?;
+        let input_map = input_vector.iter().cloned().map(|(k, c)| (c, k)).collect::<HashMap<(Modifier, u8), Key>>();
+
+        let mut output_string = String::new();
+        let mut output_file = OpenOptions::new().read(true).open(output)?;
+        output_file.read_to_string(&mut output_string)?;
+        let output_vector: Vec<(Key, (Modifier, u8))> = ron::from_str(&output_string).map_err(|e| Error::new(ErrorKind::InvalidData, e))?;
+        let output_map = output_vector.iter().cloned().collect::<HashMap<Key, (Modifier, u8)>>();
+        Ok( Converter { input_map, output_map } )
+    }
 
     /// Constructs a Converter with  
     /// default querty mapping for keyboard codes as per USB HID Usages and Descriptions document: https://usb.org/sites/default/files/hut1_22.pdf
@@ -143,7 +160,7 @@ impl Converter
             (Char('}'), (Shift, 0x30u8)),
             (Char('\\'), (NoModifier, 0x31u8)),
             (Char('|'), (Shift, 0x31u8)),
-            (Char(','), (NoModifier, 0x33u8)),
+            (Char(';'), (NoModifier, 0x33u8)),
             (Char(':'), (Shift, 0x33u8)),
             (Char('\''), (NoModifier, 0x34u8)),
             (Char('\"'), (Shift, 0x34u8)),
@@ -224,7 +241,7 @@ impl Converter
 /// Keyboard modifier input values
 ///
 /// Type Modifier represents the pressed combinations of the modifier keys on the keyboard (ctrl, shift, alt, gui or none).
-#[derive(Debug, PartialEq, Clone, Copy, Hash, Eq)]
+#[derive(Debug, PartialEq, Clone, Copy, Hash, Eq, Deserialize, Serialize)]
 pub enum Modifier
 {
     /// No modifier key is pressed
@@ -296,7 +313,7 @@ impl From<u8> for Modifier
 ///
 /// Type Keypress represents the different type of inputs from the keyboard
 #[non_exhaustive]
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Deserialize, Serialize)]
 pub enum Key
 {
     /// Any of the number, symbols or alphabetical keys
