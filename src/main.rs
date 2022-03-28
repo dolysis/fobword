@@ -5,7 +5,6 @@ mod iohelper;
 use app::{App, AppSettings};
 use iohelper::IOhelper;
 
-use std::env::current_dir;
 use std::fs::{File, OpenOptions};
 use std::io::Read;
 

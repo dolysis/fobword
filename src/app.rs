@@ -2,11 +2,9 @@ use fobword_core::config::{Config, Data, LockedData, SymbolLevel};
 use fobword_core::converter::{Converter, Key, Modifier};
 use fobword_core::error::DataHandleError;
 use serde::{Deserialize, Serialize};
-use std::convert::TryInto;
 use std::fs::OpenOptions;
-use std::io::{BufRead, BufReader, Write};
+use std::io::Write;
 use SSD1306_Terminal::window::Window;
-use iohelper::Events;
 
 use super::*;
 
@@ -85,18 +83,20 @@ impl App {
         data.generate(name, None, 15, SymbolLevel::Symbols)
     }
 
-    fn action_change_password(&mut self) -> Result<(), DataHandleError> {
-        println!("Type old password");
+    fn action_change_password(&mut self) -> Result<(), DataHandleError> 
+    {
+        self.iohelper.clear_screen();
+        self.iohelper.println("Type old password:")?;
         let old_password = self.iohelper.read_line()?;
 
-        println!("Type new password");
+        self.iohelper.println("Type new password:")?;
         let new_password = self.iohelper.read_line()?;
 
-        println!("Type new password to confirm");
+        self.iohelper.println("Confirm password:")?;
         if self.iohelper.read_line()? == new_password {
             return self.data.change_password(&old_password, &new_password);
         }
-        println!("Passwords do not match");
+        self.iohelper.println("The passwords do not match")?;
         Ok(())
     }
 
@@ -108,14 +108,18 @@ impl App {
     }
 
     fn action_use_macro(&mut self, data: &Data, command: &str) -> Result<(), DataHandleError> {
-        if let Some(information) = data.get(command) {
+        if let Some(information) = data.get(command) 
+        {
             let buffers =
                 converterutilities::string_to_report_buffers(&self.iohelper.converter, &information.blob);
-            if let Some(buffers) = buffers {
+            if let Some(buffers) = buffers 
+            {
                 self.iohelper.write_buffers_to_file(buffers)?;
             }
-        } else {
-            println!("No data found.")
+        } 
+        else 
+        {
+            self.iohelper.println("No macro found with that name.")?;
         }
         Ok(())
     }

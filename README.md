@@ -1,4 +1,10 @@
-# Dolysis Repository Template
+# Fobword
+
+Fobword is a password
+
+goals:
+
+portable keymaps and password manager
 
 ## License
 

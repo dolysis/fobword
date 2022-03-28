@@ -1,5 +1,4 @@
 use fobword_core::converter::{Converter, Key, Modifier};
-use std::collections::VecDeque;
 
 
 /// Convert a string to raw input buffers.

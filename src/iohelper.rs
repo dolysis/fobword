@@ -1,20 +1,16 @@
-use std::collections::VecDeque;
 use std::fs::{OpenOptions, File};
-use std::io::{Read, Write, self};
-use SSD1306_Terminal::window::{Window, self};
+use std::io::{Read, Write};
+use SSD1306_Terminal::window::Window;
 use fobword_core::converter::{Converter, Key};
 use fobword_core::error::DataHandleError;
-use std::sync::mpsc::{self, RecvError, SendError, Sender, Receiver};
+use std::sync::mpsc::{self, SendError, Sender, Receiver};
 use libc; // 0.2.66
 use nix::ioctl_read; // 0.16.1
 use std::{
-    mem::MaybeUninit,
     os::unix::{fs::OpenOptionsExt, io::AsRawFd},
 };
 use std::thread::spawn;
 use fobword_core::converter::*;
-
-use crate::converterutilities;
 
 ioctl_read!(hid_read_sz, b'H', 0x01, libc::c_int);
 ioctl_read!(hid_read_descr, b'H', 0x02, hidraw_report_descriptor);
@@ -66,9 +62,14 @@ impl IOhelper
         Ok(IOhelper { output_file, receiver, modifier_state, keys_held, converter, window })
     }
 
+    pub fn clear_screen(&mut self)
+    {
+        self.window.clear_screen()
+    }
+
     pub fn println(&mut self, message: &str) -> Result<usize, DataHandleError>
     {
-        self.window.print_to_buffer(message)
+        self.window.print_to_buffer(message).map_err(|e| DataHandleError::IOError(e))
     }
 
     pub fn wait_for(&mut self, key: Key) -> Result<(), DataHandleError>
