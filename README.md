@@ -1,10 +1,7 @@
 # Fobword
 
-Fobword is a password
-
-goals:
-
-portable keymaps and password manager
+Fobword is a portable password manager.
+The project is designed for the Nanopi Neo with OLED screen, where it will sit between the keyboard and the computer.
 
 ### Commands
 
@@ -23,11 +20,17 @@ portable keymaps and password manager
 
 ## Keymaps
 
-[USB document](https://usb.org/sites/default/files/hut1_22.pdf#page=83)
-
+Fobword is by default qwerty but supports custom mapping.
+It works by internally mapping a custom layout to qwerty, so no changes need to be made on the host computer. 
+The default is based on the official [USB document](https://usb.org/sites/default/files/hut1_22.pdf#page=83). 
+The numbers of the keys map to a qwerty keyboard like this:
 ![Keyboard map](keyboard_layout.png)
 
+The layout is formatted as (Key, (Modifier, Key number))
 [qwerty-layout.txt]
+
+If you want to use a custom map, you have to create a new layout and edit the settings value 'input map' to the name of your layout.
+
 ## Plug and play sd card image
 
 ## Setup steps?
