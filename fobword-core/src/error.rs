@@ -1,5 +1,3 @@
-use std::sync::mpsc::RecvError;
-
 /// Convience Error type to handle the different errors from exterior crates
 #[derive(Debug)]
 pub enum DataHandleError

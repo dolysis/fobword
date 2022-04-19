@@ -59,6 +59,7 @@ impl App {
                 match command.as_ref() {
                     "" => { self.iohelper.write_key(&Key::Macro)?; },
                     "lock" => break 'inner,
+                    // Hint - print the hint/comment
                     "new" => self.action_create_macro(&mut data)?,
                     "save" => self.action_save_data(&mut data)?,
                     "exit" => break 'outer,

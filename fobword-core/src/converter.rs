@@ -276,6 +276,7 @@ pub enum Modifier
     ShiftAltGui = 14,
     /// Control, shift, alt and gui modifier keys are pressed
     CtrlShiftAltGui = 15,
+    RightAlt = 64,
 }
 
 impl From<u8> for Modifier
@@ -283,6 +284,7 @@ impl From<u8> for Modifier
     /// Will convert a u8 to a Modifier using a byte operation to check which bits are set
     fn from(num: u8) -> Modifier
     {
+        if num == 64 { return Modifier::RightAlt }
         // Left modifier keys use the lower half of the u8
         // Right modifier keys use the upper half of the u8
         // Here we combine them into one Modifier.

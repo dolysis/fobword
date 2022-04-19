@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 fobword-core = {path = "fobword-core"}
 SSD1306-Terminal = {path = "SSD1306-Terminal" }
+notify = "4.0.17"
 serde_yaml = "0.8"
 password-hash = "0.2.1"
 ron = "0.7.0"

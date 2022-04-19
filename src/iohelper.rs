@@ -1,5 +1,7 @@
+use std::collections::HashMap;
 use std::fs::{OpenOptions, File};
-use std::io::{Read, Write};
+use std::io::{Read, Write, self};
+use std::path::PathBuf;
 use SSD1306_Terminal::window::Window;
 use fobword_core::converter::{Converter, Key};
 use fobword_core::error::DataHandleError;
@@ -9,8 +11,12 @@ use nix::ioctl_read; // 0.16.1
 use std::{
     os::unix::{fs::OpenOptionsExt, io::AsRawFd},
 };
-use std::thread::spawn;
+use std::thread;
 use fobword_core::converter::*;
+use std::sync::{Arc, atomic::AtomicBool};
+use notify::{Watcher, RecursiveMode, watcher};
+
+
 
 ioctl_read!(hid_read_sz, b'H', 0x01, libc::c_int);
 ioctl_read!(hid_read_descr, b'H', 0x02, hidraw_report_descriptor);
@@ -55,7 +61,7 @@ impl IOhelper
     /// Create a new helper from stuff
     pub(crate) fn new(gadget_path: &str, converter: Converter, window: Window) -> std::io::Result<IOhelper>
     {
-        let receiver = IOhelper::init_hidraw_readers()?;
+        let receiver = IOhelper::init_hidraw_readers2()?;
         let output_file = OpenOptions::new().write(true).open(gadget_path)?;
         let modifier_state = 0u8;
         let keys_held = Vec::new();
@@ -123,6 +129,93 @@ impl IOhelper
         self.window.sleep()
     }
 
+    fn init_hidraw_readers2() -> std::io::Result<Receiver<Events>>
+    {
+        let files = std::fs::read_dir("/dev/")?;
+
+        let (sender, receiver) = mpsc::channel();
+
+        let mut threads = HashMap::new();
+
+        // Check all existing files
+
+        for f in files
+        {
+            let file_path = f?.path();
+            if let Some(file) = IOhelper::validate_file(&file_path)?
+            {
+                IOhelper::starting_thread(file_path, file, &mut threads, &sender)
+            }
+        }
+
+  
+    
+        thread::spawn(move || 
+        {              
+            let (tx, rx) = mpsc::channel();
+            let mut watcher = watcher(tx, std::time::Duration::from_secs(1)).unwrap();
+            watcher.watch("/dev/", RecursiveMode::NonRecursive).unwrap();
+            loop {
+                match rx.recv() {
+                Ok(event) => {
+                    match event
+                    {
+                            notify::DebouncedEvent::Create(path) => 
+                            {
+                                if let Ok(Some(file)) = IOhelper::validate_file(&path)
+                                {
+                                    IOhelper::starting_thread(path, file, &mut threads, &sender)
+                                }
+                            }
+                            notify::DebouncedEvent::Remove(path) => IOhelper::stopping_thread(path, &mut threads),
+                            _ => continue,
+                    };
+                },
+                Err(e) => println!("watch error: {:?}", e),
+                }
+            }
+        }
+        );
+
+        Ok(receiver)
+    }
+
+    fn starting_thread(path: PathBuf, mut file: File, threads: &mut HashMap<PathBuf, Arc<AtomicBool>>, sender: &Sender<Events>)
+    {
+        let stop_flag = Arc::new(AtomicBool::new(false));
+
+        thread::spawn(
+            {
+                let stop_flag = stop_flag.clone();
+                let thread_sender = sender.clone();
+                let mut buffer = vec![0u8;8];
+                let mut old_buffer = vec![0u8;8];
+                move ||
+                loop 
+                {
+                    if stop_flag.load(std::sync::atomic::Ordering::Relaxed)
+                    {
+                        break;
+                    }
+                    if let Ok(_) = file.read(&mut buffer)
+                    {
+                        IOhelper::generate_events(&buffer, &old_buffer, &thread_sender);
+                        std::mem::swap(&mut buffer, &mut old_buffer);
+                    }
+                }
+            }
+        );
+        threads.insert(path, stop_flag);
+    }
+
+    fn stopping_thread(path: PathBuf, threads: &mut HashMap<PathBuf, Arc<AtomicBool>>)
+    {
+        if let Some(stop_flag) = threads.get(&path)
+        {
+            stop_flag.store(true, std::sync::atomic::Ordering::Relaxed);
+        };
+    }
+
     fn init_hidraw_readers() -> std::io::Result<Receiver<Events>>
     {
         let (sender, receiver) = mpsc::channel();
@@ -133,7 +226,7 @@ impl IOhelper
             let thread_sender = sender.clone();
             let mut buffer = vec![0u8;8];
             let mut old_buffer = vec![0u8;8];
-            spawn(move || 
+            thread::spawn(move || 
             {
                 loop
                 {
@@ -179,6 +272,32 @@ impl IOhelper
         Ok(())
     }
 
+    fn validate_file(path: &PathBuf)-> std::io::Result<Option<File>>
+    {
+        if path.to_str().expect("what").contains("hidraw")
+        {
+            let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .custom_flags(libc::O_NONBLOCK)
+            .open(path)?;
+            let fd = file.as_raw_fd();
+    
+            let mut size = 0;
+            unsafe { hid_read_sz(fd, &mut size)?; }
+            
+            let mut desc_raw = hidraw_report_descriptor { size: size as u32, value: [0u8; HID_MAX_DESCRIPTOR_SIZE] };
+            unsafe { hid_read_descr(fd, &mut desc_raw)?; }
+            let data = &desc_raw.value[..desc_raw.size as usize];
+
+            // Is keyboard?
+            if data[3] == 6
+            {
+                return Ok(Some(file));
+            }
+        }
+        Ok(None)
+    }
 
     fn viable_files()-> std::io::Result<Vec<File>>
     {
