@@ -31,16 +31,6 @@ The layout is formatted as (Key, (Modifier, Key number))
 
 If you want to use a custom map, you have to create a new layout and edit the settings value 'input map' to the name of your layout.
 
-## Plug and play sd card image
-
-## Setup steps?
-
-The linux stuffs
-
-Gadget initialisation
-
-Program itself + keymaps
-
 
 ## License
 
